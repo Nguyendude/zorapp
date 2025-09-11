@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { SwitchTheme } from "~~/components/SwitchTheme";
 import { RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
 
 const NavLink = ({ href, children }: { href: string; children: React.ReactNode }) => {
@@ -24,7 +25,7 @@ const NavLink = ({ href, children }: { href: string; children: React.ReactNode }
 export const Header = () => {
   return (
     <div className="sticky lg:static top-0 navbar bg-base-100 min-h-0 flex-shrink-0 justify-between z-20 shadow-md shadow-secondary px-0 sm:px-2">
-      <div className="navbar-start w-auto lg:w-1/2">
+      <div className="navbar-start w-auto lg:w-1/2 flex items-center gap-4">
         <div className="lg:hidden dropdown" data-tip="Menu">
           <div tabIndex={0} role="button" className="btn btn-ghost btn-sm">
             <svg
@@ -46,6 +47,7 @@ export const Header = () => {
             </li>
             <li>
               <Link href="/explore">Explore</Link>
+              <Link href="/channels">Channels</Link>
             </li>
           </ul>
         </div>
@@ -62,9 +64,30 @@ export const Header = () => {
           <li>
             <NavLink href="/explore">Explore</NavLink>
           </li>
+          <li>
+            <NavLink href="/creators">Creators</NavLink>
+          </li>
+          <li>
+            <NavLink href="/channels">Channels</NavLink>
+          </li>
         </ul>
+        {/* Search bar */}
+        <form className="ml-4 flex items-center" role="search" onSubmit={e => e.preventDefault()}>
+          <input
+            type="text"
+            placeholder="Search..."
+            className="input input-bordered input-sm rounded-full px-4"
+            style={{ fontFamily: "inherit" }}
+          />
+        </form>
       </div>
-      <div className="navbar-end flex-grow mr-4">
+      <div className="navbar-end flex items-center gap-4 mr-4">
+        <Link href="/create">
+          <button className="btn btn-primary btn-sm rounded-full font-semibold px-4 mr-2" type="button">
+            Create a coin
+          </button>
+        </Link>
+        <SwitchTheme />
         <RainbowKitCustomConnectButton />
       </div>
     </div>
