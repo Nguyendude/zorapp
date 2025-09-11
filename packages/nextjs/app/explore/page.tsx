@@ -177,17 +177,17 @@ export default function ExplorePage() {
                 getCoin({ address: c.address, chain: baseSepolia.id }),
                 8000,
               );
-              const fullCoin = response.data?.zora20Token;
-              if (fullCoin && fullCoin.mediaContent) {
+            const fullCoin = response.data?.zora20Token;
+            if (fullCoin && fullCoin.mediaContent) {
                 return { ...c, mediaContent: fullCoin.mediaContent } as typeof c;
-              }
-              return c;
-            } catch (err) {
-              console.error(`Failed to fetch full coin data for ${c.address}:`, err);
-              return c;
             }
-          }),
-        );
+            return c;
+          } catch (err) {
+            console.error(`Failed to fetch full coin data for ${c.address}:`, err);
+            return c;
+          }
+        }),
+      );
         for (const r of settled) {
           results.push(r.status === "fulfilled" ? r.value : group[results.length % group.length]);
         }
@@ -248,50 +248,50 @@ export default function ExplorePage() {
 
       {/* Horizontally scrollable tabs */}
       <div className="flex overflow-x-auto gap-2 p-2 mb-8 scrollbar-hide">
-        {exploreTabs.map(tab => (
-          <button
-            key={tab.id}
+              {exploreTabs.map(tab => (
+                <button
+                  key={tab.id}
             className={`btn btn-sm rounded-full ${activeTab === tab.id ? "btn-primary" : "btn-ghost"}`}
-            onClick={() => setActiveTab(tab.id)}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
-
-      {coins.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-xl opacity-70">No coins found</p>
-          <p className="text-sm opacity-50">Try a different category or check back later</p>
+                  onClick={() => setActiveTab(tab.id)}
+                >
+                  {tab.label}
+                </button>
+              ))}
         </div>
-      ) : (
+
+          {coins.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-xl opacity-70">No coins found</p>
+              <p className="text-sm opacity-50">Try a different category or check back later</p>
+            </div>
+          ) : (
         /* The main grid of cards, now visually immersive */
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
           {coins.map(c => {
-            const mediaUrl = c.mediaContent?.previewImage?.medium || c.mediaContent?.previewImage?.small || null;
-            return (
+              const mediaUrl = c.mediaContent?.previewImage?.medium || c.mediaContent?.previewImage?.small || null;
+              return (
               <Link href={`/post/${c.address}`} key={c.id}>
                 {/* The card as a link for a seamless experience */}
                 <div className="relative w-full aspect-[9/16] rounded-lg overflow-hidden cursor-pointer group">
                   {/* Media (Image) as the background */}
-                  {coinMetasLoading ? (
+                      {coinMetasLoading ? (
                     <div className="w-full h-full animate-pulse bg-base-200" />
-                  ) : mediaUrl ? (
-                    <Image
-                      src={mediaUrl}
-                      alt={c.name}
-                      width={400}
+                      ) : mediaUrl ? (
+                        <Image
+                          src={mediaUrl}
+                          alt={c.name}
+                          width={400}
                       height={400}
                       className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                      onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-                        (e.target as HTMLImageElement).style.display = "none";
-                      }}
-                    />
-                  ) : (
+                          onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+                            (e.target as HTMLImageElement).style.display = "none";
+                          }}
+                        />
+                      ) : (
                     <div className="w-full h-full flex items-center justify-center bg-base-200 opacity-50">
-                      <span className="text-xs">No media</span>
-                    </div>
-                  )}
+                          <span className="text-xs">No media</span>
+                        </div>
+                      )}
 
                   {/* Overlay for text and creator info */}
                   <div className="absolute inset-x-0 bottom-0 p-3 text-white bg-gradient-to-t from-black/80 to-transparent">
@@ -317,8 +317,8 @@ export default function ExplorePage() {
                   </div>
                 </div>
               </Link>
-            );
-          })}
+              );
+            })}
         </div>
       )}
 
