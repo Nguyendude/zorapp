@@ -114,7 +114,7 @@ export default function ExplorePage() {
       },
       {
         id: "valuable",
-        label: "💎 Most Valuable",
+        label: "💎 High Marketcap",
         fetchFunction: () => getCoinsMostValuable({ count: 20 }) as Promise<ExploreListResponse>,
       },
       {
