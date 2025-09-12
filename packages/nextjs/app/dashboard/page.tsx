@@ -253,12 +253,12 @@ export default function Dashboard() {
 
   if (!address) {
     return (
-      <div className="container mx-auto px-4 py-8">
+  <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="hero min-h-[50vh] bg-base-200 rounded-3xl">
           <div className="hero-content text-center">
             <div className="max-w-md">
               <h1 className="text-5xl font-bold">📊</h1>
-              <h2 className="text-3xl font-bold mb-4">Creator Dashboard</h2>
+
               <p className="py-6">
                 Connect your wallet to view your PostMint statistics, earnings, and manage your blog post coins.
               </p>
@@ -286,10 +286,10 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+  <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header with Profile */}
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-4xl font-bold">📊 Creator Dashboard</h1>
+
         <div className="flex gap-2">
           <Link href="/" className="btn btn-primary">
             Create New Post

@@ -13,9 +13,12 @@ import scaffoldConfig from "~~/scaffold.config";
 
 const { onlyLocalBurnerWallet, targetNetworks } = scaffoldConfig;
 
+
+// Only include WalletConnect on the client to avoid SSR issues with indexedDB
+const isClient = typeof window !== "undefined";
 const wallets = [
   metaMaskWallet,
-  walletConnectWallet,
+  ...(isClient ? [walletConnectWallet] : []),
   ledgerWallet,
   coinbaseWallet,
   rainbowWallet,

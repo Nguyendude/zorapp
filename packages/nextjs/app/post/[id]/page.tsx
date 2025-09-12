@@ -140,7 +140,7 @@ export default function PostDetailPage() {
 
   if (error) {
     return (
-      <div className="container mx-auto px-4 py-8">
+  <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="alert alert-error mb-8">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -171,7 +171,7 @@ export default function PostDetailPage() {
 
   if (!coinData) {
     return (
-      <div className="container mx-auto px-4 py-8">
+  <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="alert alert-warning">
           <span>No coin data found</span>
         </div>
@@ -183,7 +183,7 @@ export default function PostDetailPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+  <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="breadcrumbs text-sm mb-6">
         <ul>
           <li>

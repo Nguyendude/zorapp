@@ -1,5 +1,6 @@
 "use client";
 
-export { default } from "../page";
+// Old homepage moved to /create
+export { default } from "../page.old";
 
 
