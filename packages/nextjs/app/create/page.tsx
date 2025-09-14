@@ -13,6 +13,7 @@ import { Address, createPublicClient, http } from "viem";
 import { baseSepolia } from "viem/chains";
 import { useAccount, useWalletClient } from "wagmi";
 import { notification } from "~~/utils/scaffold-eth";
+import { sendNewPostNotification } from "~~/utils/telegram";
 
 if (typeof window !== "undefined" && process.env.NEXT_PUBLIC_ZORA_API_KEY) {
   setApiKey(process.env.NEXT_PUBLIC_ZORA_API_KEY);
@@ -110,12 +111,25 @@ export default function CreatePage() {
       const result = await createCoin(coinParams, walletClient, publicClient, {
         gasMultiplier: 120,
       });
+      const coinAddress = result.address ?? "";
       setCreatedCoin({
         hash: result.hash,
-        address: result.address ?? "",
+        address: coinAddress,
         deployment: result.deployment,
       });
-      notification.success("🎉 Blog post coin created successfully!");
+      
+      // Send Telegram notification
+      await sendNewPostNotification({
+        title: blogPost.title,
+        author: connectedAddress,
+        coinAddress: coinAddress,
+        content: blogPost.content,
+        marketCap: BigInt(0),
+        totalSupply: BigInt("1000000000000000000000000000"), // 1B tokens
+        mediaUrl: imageFile ? URL.createObjectURL(imageFile) : undefined
+      });
+
+      notification.success("🎉 New coin launched!");
       setBlogPost({ title: "", content: "", symbol: "" });
       setImageFile(null);
     } catch (error: any) {
@@ -148,7 +162,7 @@ export default function CreatePage() {
   <div className="px-5 w-full max-w-6xl">
         <h1 className="text-4xl font-bold text-center mb-8">📝 PostMint - Publish to Earn</h1>
         <div className="bg-base-100 rounded-3xl shadow-lg p-8 mb-8">
-          <h2 className="text-2xl font-semibold mb-6">Create Your Blog Post Coin</h2>
+          <h2 className="text-2xl font-semibold mb-6">Create your Content Coin</h2>
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium mb-2">

@@ -22,6 +22,7 @@
     "@uniswap/sdk-core": "~5.8.2",
     "@uniswap/v2-sdk": "~4.6.1",
     "@zoralabs/coins-sdk": "^0.2.8",
+    "@zoralabs/protocol-sdk": "^0.13.11",
     "blo": "~1.2.0",
     "burner-connector": "0.0.16",
     "daisyui": "5.0.9",
