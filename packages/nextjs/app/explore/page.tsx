@@ -222,9 +222,8 @@ export default function ExplorePage() {
     return () => {
       cancelled = true;
     };
-  }, [coins]);
+}, [coins]);
 
-  // Skeleton loader
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -238,43 +237,51 @@ export default function ExplorePage() {
   }
 
   return (
-  <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Channels Section */}
       <div className="mb-10">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold">Channels</h2>
-          <Link 
-            href="/channels" 
-            className="text-sm bg-base-200 hover:bg-base-300 px-3 py-1.5 rounded-lg transition-colors"
-          >
+          <Link href="/channels" className="text-sm bg-base-200 hover:bg-base-300 px-3 py-1.5 rounded-lg transition-colors">
             See all
           </Link>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
           {mockChannels.map(channel => (
-            <div key={channel.id} className="bg-base-200 rounded-xl p-3 hover:bg-base-300 transition-all duration-200 cursor-pointer flex gap-3 items-center group">
-              <div className="relative">
+            <div key={channel.id} className="relative rounded-xl overflow-hidden group">
+              <div className="absolute inset-0 z-0">
                 <Image
-                  src={channel.creator.avatar}
-                  alt="creator avatar"
-                  width={50}
-                  height={50}
-                  className="rounded-lg border border-base-300"
-                  loading="lazy"
+                  src={`https://api.dicebear.com/7.x/shapes/svg?seed=${channel.id}`}
+                  alt="background"
+                  fill
+                  className="object-cover opacity-30"
                 />
-                <div className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-success animate-pulse"></div>
+                <div className="absolute inset-0 bg-base-200/90 backdrop-blur-sm"></div>
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <h3 className="font-semibold truncate">{channel.name}</h3>
-                  <span className="text-xs bg-base-300 px-1.5 py-0.5 rounded-md">LIVE</span>
+
+              <div className="relative z-10 p-3 flex gap-3 items-center hover:bg-base-300/50 transition-all duration-200 cursor-pointer">
+                <div className="relative">
+                  <Image
+                    src={channel.creator.avatar}
+                    alt="creator avatar"
+                    width={50}
+                    height={50}
+                    className="rounded-lg border border-base-300"
+                    loading="lazy"
+                  />
+                  <div className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-success animate-pulse"></div>
                 </div>
-                <div className="text-xs opacity-70 truncate">{channel.symbol}</div>
-                <div className="text-xs font-medium mt-0.5 text-success">Market cap: {channel.marketCap}</div>
-              </div>
-              <div className="text-xs opacity-60">
-                <div>replies: {channel.subscribers}</div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-semibold truncate">{channel.name}</h3>
+                    <span className="text-xs bg-base-300/50 px-1.5 py-0.5 rounded-md">LIVE</span>
+                  </div>
+                  <div className="text-xs opacity-70 truncate">{channel.symbol}</div>
+                  <div className="text-xs font-medium mt-0.5 text-success">Market cap: {channel.marketCap}</div>
+                </div>
+                <div className="text-xs opacity-60">
+                  <div>Sub: {channel.subscribers}</div>
+                </div>
               </div>
             </div>
           ))}
@@ -322,16 +329,8 @@ export default function ExplorePage() {
       </div>
 
       {/* Categories Bar */}
-  <div className="flex flex-wrap gap-2 mb-8 justify-center">
-        {[
-          "Featured",
-          "Trending",
-          "Pop Culture",
-          "Music",
-          "Sports",
-          "Events",
-          "All",
-        ].map(category => (
+      <div className="flex flex-wrap gap-2 mb-8 justify-center">
+        {["Featured", "Trending", "Pop Culture", "Music", "Sports", "Events", "All"].map(category => (
           <button
             key={category}
             className="btn btn-sm btn-outline rounded-full px-4 py-1 text-base font-medium"
@@ -342,7 +341,7 @@ export default function ExplorePage() {
         ))}
       </div>
 
-      <div className="tabs tabs-boxed mb-8 bg-base-200">
+      <div className="tabs tabs-boxed mb-8 bg-transparent">
         {coins.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-xl opacity-70">No coins found</p>
@@ -352,52 +351,75 @@ export default function ExplorePage() {
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
             {coins.map(c => {
               const mediaUrl = c.mediaContent?.previewImage?.medium || c.mediaContent?.previewImage?.small || null;
+              const volumeChange = parseFloat(c.volume24h || "0");
+              const changeColorClass = volumeChange >= 0 ? "text-success" : "text-error";
+
               return (
-                <Link href={`/post/${c.address}`} key={c.id}>
-                  <div className="relative w-full aspect-[9/16] rounded-lg overflow-hidden cursor-pointer group">
-                    {/* Media (Image) as the background */}
-                    {coinMetasLoading && !mediaUrl ? (
-                      <div className="w-full h-full animate-pulse bg-base-200" />
-                    ) : mediaUrl ? (
+                <Link href={`/post/${c.address}`} key={c.id} className="block">
+                  <div className="relative w-full aspect-[9/16] rounded-xl overflow-hidden cursor-pointer">
+                    {mediaUrl ? (
                       <Image
                         src={mediaUrl}
                         alt={c.name}
                         width={400}
-                        height={400}
-                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        height={600}
+                        className="w-full h-full object-cover"
                         loading="lazy"
-                        onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-                          (e.target as HTMLImageElement).style.display = "none";
-                        }}
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-base-200 opacity-50">
                         <span className="text-xs">No media</span>
                       </div>
                     )}
-                    {/* Overlay for text and creator info */}
-                    <div className="absolute inset-x-0 bottom-0 p-3 text-white bg-gradient-to-t from-black/80 to-transparent">
-                      <div className="flex items-center mb-1">
-                        <h2 className="text-sm md:text-base font-semibold truncate leading-tight">{c.name}</h2>
+                    <div className="absolute inset-0 p-2 text-white flex flex-col justify-between">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1">
+                          {c.mediaContent?.previewImage?.small && (
+                            <div className="w-5 h-5 rounded-full overflow-hidden border border-white">
+                              <Image
+                                src={c.mediaContent.previewImage.small}
+                                alt="avatar"
+                                width={20}
+                                height={20}
+                                className="object-cover"
+                              />
+                            </div>
+                          )}
+                          <span className="text-xs font-semibold opacity-80">
+                            @{c.creatorAddress.substring(2, 6)}...
+                            {c.creatorAddress.substring(c.creatorAddress.length - 4)}
+                          </span>
+                        </div>
+                        <div className="bg-black/50 rounded-full px-2 py-0.5 text-xs font-semibold">
+                          1d
+                        </div>
                       </div>
-                      <div className="flex flex-wrap gap-2 items-center text-xs opacity-80 mb-1">
-                        <span className="bg-black/40 rounded px-2 py-0.5">{c.symbol}</span>
-                        <span className="bg-black/40 rounded px-2 py-0.5">Marketcap: {c.marketCap}</span>
-                        <span className="bg-black/40 rounded px-2 py-0.5">Holders: {c.uniqueHolders}</span>
+                      <div className="bg-black/50 backdrop-blur-sm rounded-lg p-2 text-center w-full">
+                        <h3 className="font-bold text-lg leading-tight truncate">{c.name}</h3>
+                        <p className="text-sm opacity-80 truncate">{c.description || "The spice must flow"}</p>
                       </div>
-                      <div className="flex items-center gap-1 mt-1">
-                        <Image
-                          src={`https://api.dicebear.com/7.x/identicon/svg?seed=${c.creatorAddress}`}
-                          alt="avatar"
-                          width={18}
-                          height={18}
-                          className="rounded-full border border-white/50"
-                          loading="lazy"
-                        />
-                        <span className="text-xs font-mono opacity-70 truncate">
-                          {c.creatorAddress.slice(0, 4)}...{c.creatorAddress.slice(-4)}
-                        </span>
+                    </div>
+                    <div className="absolute bottom-0 inset-x-0 bg-base-300 p-2 flex flex-col items-center gap-1 rounded-b-xl">
+                      <div className="flex justify-around w-full text-xs font-small">
+                        <div className="flex flex-col items-center">
+                          <span>MCAP</span>
+                          <span className="font-bold">{parseFloat(c.marketCap).toFixed(2)}k</span>
+                        </div>
+                        <div className="flex flex-col items-center">
+                          <span>24h</span>
+                          <span className="font-bold">{parseFloat(c.volume24h).toFixed(2)}</span>
+                        </div>
+                        <div className="flex flex-col items-center">
+                          <span>24h Δ</span>
+                          <span className={`font-bold ${changeColorClass}`}>
+                            {volumeChange > 0 ? "+" : ""}
+                            {volumeChange.toFixed(2)}%
+                          </span>
+                        </div>
                       </div>
+                      <button className="w-full mt-2 py-1 bg-base-100 hover:bg-base-200 rounded-lg text-sm font-medium transition-colors">
+                        Trade
+                      </button>
                     </div>
                   </div>
                 </Link>
