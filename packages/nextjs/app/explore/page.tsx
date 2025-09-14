@@ -1,12 +1,10 @@
-"use client";
-
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { getCoin, getCoinsLastTraded, getCoinsMostValuable, getCoinsNew, setApiKey } from "@zoralabs/coins-sdk";
 import { formatEther } from "viem";
 import { baseSepolia } from "viem/chains";
-import { useAccount } from "wagmi";
+
 
 setApiKey(process.env.NEXT_PUBLIC_ZORA_API_KEY || "");
 
@@ -110,121 +108,24 @@ const mockChannels = [
   },
 ];
 
-export default function ExplorePage() {
-  const { address } = useAccount();
-  const [coins, setCoins] = useState<CoinNode[]>([]);
-  const [coinMetasLoading, setCoinMetasLoading] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<ExploreTab["id"]>("new");
-  const [page, setPage] = useState(1);
+
+export default async function ExplorePage() {
+  // Server-side data fetching for initial tab ("new")
+  setApiKey(process.env.NEXT_PUBLIC_ZORA_API_KEY || "");
   const pageSize = 20;
-
-  const DISABLE_MEDIA_FETCH = typeof window !== "undefined" && process.env.NEXT_PUBLIC_DISABLE_MEDIA_FETCH === "true";
-
-  async function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
-    let timeoutId: NodeJS.Timeout | undefined = undefined;
-    const timeoutPromise = new Promise<never>((_, reject) => {
-      timeoutId = setTimeout(() => reject(new Error("timeout")), ms);
-    });
-    try {
-      return await Promise.race([promise, timeoutPromise]);
-    } finally {
-      if (timeoutId !== undefined) clearTimeout(timeoutId);
-    }
-  }
-
-  const exploreTabs: ExploreTab[] = useMemo(
-    () => [
-      {
-        id: "new",
-        label: "🆕 New Coins",
-        fetchFunction: () => getCoinsNew({ count: 100 }) as Promise<ExploreListResponse>,
-      },
-      {
-        id: "valuable",
-        label: "💎 High Marketcap",
-        fetchFunction: () => getCoinsMostValuable({ count: 60 }) as Promise<ExploreListResponse>,
-      },
-      {
-        id: "trending",
-        label: "🔥 Recently Traded",
-        fetchFunction: () => getCoinsLastTraded({ count: 60 }) as Promise<ExploreListResponse>,
-      },
-    ],
-    [],
-  );
-
-  const fetchCoins = useCallback(async () => {
-    setLoading(true);
-    const tab = exploreTabs.find(t => t.id === activeTab);
-    if (!tab) return setLoading(false);
-
-    try {
-      const res = await tab.fetchFunction();
-      const edges = res.data?.exploreList?.edges || [];
-      const allCoins = edges.map(({ node }) => ({
-        ...node,
-        totalSupply: safeFormatEther(node.totalSupply),
-        marketCap: safeFormatEther(node.marketCap),
-        volume24h: safeFormatEther(node.volume24h),
-      }));
-      setCoins(allCoins.slice((page - 1) * pageSize, page * pageSize));
-    } catch (err) {
-      console.error("Error fetching coins:", err);
-      setCoins([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [activeTab, exploreTabs, page]);
-
-  useEffect(() => {
-    fetchCoins();
-  }, [fetchCoins]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (!coins.length) return;
-    if (!process.env.NEXT_PUBLIC_ZORA_API_KEY || DISABLE_MEDIA_FETCH) return;
-    let cancelled = false;
-    async function fetchVisibleCoinsMedia() {
-      setCoinMetasLoading(true);
-      const settled = await Promise.allSettled(
-        coins.map(async c => {
-          if (c.mediaContent) return c;
-          try {
-            const response = await withTimeout(getCoin({ address: c.address, chain: baseSepolia.id }), 8000);
-            const fullCoin = response.data?.zora20Token;
-            if (fullCoin && fullCoin.mediaContent) {
-              return { ...c, mediaContent: fullCoin.mediaContent } as typeof c;
-            }
-            return c;
-          } catch (err) {
-            console.error(`Failed to fetch full coin data for ${c.address}:`, err);
-            return c;
-          }
-        }),
-      );
-      if (!cancelled) {
-        setCoins(settled.map(r => (r.status === "fulfilled" ? r.value : coins[0])));
-        setCoinMetasLoading(false);
-      }
-    }
-    fetchVisibleCoinsMedia();
-    return () => {
-      cancelled = true;
-    };
-  }, [coins]);
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 w-full max-w-6xl">
-          {Array.from({ length: pageSize }).map((_, i) => (
-            <div key={i} className="animate-pulse bg-base-200 rounded-lg aspect-[9/16] w-full h-64" />
-          ))}
-        </div>
-      </div>
-    );
+  let coins: CoinNode[] = [];
+  try {
+    const res = await getCoinsNew({ count: pageSize }) as ExploreListResponse;
+    const edges = res.data?.exploreList?.edges || [];
+    coins = edges.map(({ node }) => ({
+      ...node,
+      totalSupply: safeFormatEther(node.totalSupply),
+      marketCap: safeFormatEther(node.marketCap),
+      volume24h: safeFormatEther(node.volume24h),
+    }));
+  } catch (err) {
+    console.error("Error fetching coins:", err);
+    coins = [];
   }
 
   return (
@@ -381,24 +282,6 @@ export default function ExplorePage() {
           </div>
         )}
 
-        {/* Pagination controls */}
-        <div className="flex justify-center mt-8 gap-2">
-          <button
-            className="btn btn-sm btn-outline"
-            onClick={() => setPage(p => Math.max(1, p - 1))}
-            disabled={page === 1}
-          >
-            Previous
-          </button>
-          <span className="px-2 py-1">Page {page}</span>
-          <button
-            className="btn btn-sm btn-outline"
-            onClick={() => setPage(p => p + 1)}
-            disabled={coins.length < pageSize}
-          >
-            Next
-          </button>
-        </div>
       </div>
     </div>
   );
