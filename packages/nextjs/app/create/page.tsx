@@ -145,7 +145,7 @@ export default function CreatePage() {
 
   return (
     <div className="flex items-center flex-col flex-grow pt-10">
-      <div className="px-5 w-full max-w-4xl">
+  <div className="px-5 w-full max-w-6xl">
         <h1 className="text-4xl font-bold text-center mb-8">📝 PostMint - Publish to Earn</h1>
         <div className="bg-base-100 rounded-3xl shadow-lg p-8 mb-8">
           <h2 className="text-2xl font-semibold mb-6">Create Your Blog Post Coin</h2>

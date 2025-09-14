@@ -24,16 +24,13 @@ const NavLink = ({ href, children }: { href: string; children: React.ReactNode }
 
 export const Header = () => {
   return (
-    <div className="sticky lg:static top-0 navbar bg-base-100 min-h-0 flex-shrink-0 justify-between z-20 shadow-md shadow-secondary px-0 sm:px-2">
+  <div className="sticky top-0 navbar bg-base-100 min-h-0 flex-shrink-0 justify-between z-20 px-0 sm:px-2">
       <div className="navbar-start w-auto lg:w-1/2 flex items-center gap-4">
         <Link href="/" className="hidden lg:flex items-center gap-2 ml-4 mr-6 shrink-0">
-          <div className="text-xl font-bold">📝 PostMint</div>
+          <div className="text-xl font-bold">📝 Post</div>
         </Link>
         <ul className="hidden lg:flex lg:flex-nowrap menu menu-horizontal px-1 gap-2">
-          <li>
-            <NavLink href="/">Create Post</NavLink>
-          </li>
-          <li>
+       <li>
             <NavLink href="/explore">Explore</NavLink>
           </li>
           <li>
@@ -41,6 +38,9 @@ export const Header = () => {
           </li>
           <li>
             <NavLink href="/channels">Channels</NavLink>
+          </li>
+             <li>
+            <NavLink href="/dashboard">Dashboard</NavLink>
           </li>
         </ul>
         {/* Search bar */}

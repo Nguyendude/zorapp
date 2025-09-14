@@ -253,7 +253,7 @@ export default function Dashboard() {
 
   if (!address) {
     return (
-  <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="hero min-h-[50vh] bg-base-200 rounded-3xl">
           <div className="hero-content text-center">
             <div className="max-w-md">
@@ -286,7 +286,7 @@ export default function Dashboard() {
   }
 
   return (
-  <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header with Profile */}
       <div className="flex justify-between items-center mb-8">
 

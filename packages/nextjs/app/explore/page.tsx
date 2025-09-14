@@ -8,8 +8,6 @@ import { formatEther } from "viem";
 import { baseSepolia } from "viem/chains";
 import { useAccount } from "wagmi";
 
-// import { notification } from "@/utils/scaffold-eth";
-
 setApiKey(process.env.NEXT_PUBLIC_ZORA_API_KEY || "");
 
 
@@ -34,7 +32,7 @@ interface CoinNode {
       large?: string;
     };
   };
-} // Closing brace added here
+}
 
 interface ExploreListResponse {
   data?: {
@@ -65,52 +63,51 @@ function safeFormatEther(wei: string | undefined): string {
   }
 }
 
-// Mock channels data (for demo)
 const mockChannels = [
   {
     id: "1",
     name: "BunCoin",
     creator: {
       address: "0x1234...abcd",
-      avatar: "https://api.dicebear.com/7.x/identicon/svg?seed=0x1234abcd"
+      avatar: "https://api.dicebear.com/7.x/identicon/svg?seed=0x1234abcd",
     },
     subscribers: 164,
     symbol: "BUN COIN",
-    marketCap: "$3.7M"
+    marketCap: "$3.7M",
   },
   {
     id: "2",
     name: "Feed The People",
     creator: {
       address: "0x5678...efgh",
-      avatar: "https://api.dicebear.com/7.x/identicon/svg?seed=0x5678efgh"
+      avatar: "https://api.dicebear.com/7.x/identicon/svg?seed=0x5678efgh",
     },
     subscribers: 184,
     symbol: "FTP",
-    marketCap: "$1.6M"
+    marketCap: "$1.6M",
   },
   {
     id: "3",
     name: "Bagwork",
     creator: {
       address: "0x9abc...wxyz",
-      avatar: "https://api.dicebear.com/7.x/identicon/svg?seed=0x9abcwxyz"
+      avatar: "https://api.dicebear.com/7.x/identicon/svg?seed=0x9abcwxyz",
     },
     subscribers: 2088,
     symbol: "BAG",
-    marketCap: "$23.0M"
+    marketCap: "$23.0M",
   },
   {
     id: "4",
     name: "Lenny",
     creator: {
       address: "0xdef0...1234",
-      avatar: "https://api.dicebear.com/7.x/identicon/svg?seed=0xdef01234"
+      avatar: "https://api.dicebear.com/7.x/identicon/svg?seed=0xdef01234",
     },
     subscribers: 492,
     symbol: "LENNY",
-    marketCap: "$10.6K"
-  }
+    marketCap: "$10.6K",
+  },
 ];
 
 export default function ExplorePage() {
@@ -122,7 +119,6 @@ export default function ExplorePage() {
   const [page, setPage] = useState(1);
   const pageSize = 20;
 
-  // Optional kill-switch for media fetching if networks are flaky
   const DISABLE_MEDIA_FETCH = typeof window !== "undefined" && process.env.NEXT_PUBLIC_DISABLE_MEDIA_FETCH === "true";
 
   async function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
@@ -155,7 +151,7 @@ export default function ExplorePage() {
         fetchFunction: () => getCoinsLastTraded({ count: 60 }) as Promise<ExploreListResponse>,
       },
     ],
-    []
+    [],
   );
 
   const fetchCoins = useCallback(async () => {
@@ -172,7 +168,6 @@ export default function ExplorePage() {
         marketCap: safeFormatEther(node.marketCap),
         volume24h: safeFormatEther(node.volume24h),
       }));
-      // Pagination: only show coins for current page
       setCoins(allCoins.slice((page - 1) * pageSize, page * pageSize));
     } catch (err) {
       console.error("Error fetching coins:", err);
@@ -186,7 +181,6 @@ export default function ExplorePage() {
     fetchCoins();
   }, [fetchCoins]);
 
-  // Lazy load media for visible coins only (client-side only)
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (!coins.length) return;
@@ -198,10 +192,7 @@ export default function ExplorePage() {
         coins.map(async c => {
           if (c.mediaContent) return c;
           try {
-            const response = await withTimeout(
-              getCoin({ address: c.address, chain: baseSepolia.id }),
-              8000
-            );
+            const response = await withTimeout(getCoin({ address: c.address, chain: baseSepolia.id }), 8000);
             const fullCoin = response.data?.zora20Token;
             if (fullCoin && fullCoin.mediaContent) {
               return { ...c, mediaContent: fullCoin.mediaContent } as typeof c;
@@ -211,7 +202,7 @@ export default function ExplorePage() {
             console.error(`Failed to fetch full coin data for ${c.address}:`, err);
             return c;
           }
-        })
+        }),
       );
       if (!cancelled) {
         setCoins(settled.map(r => (r.status === "fulfilled" ? r.value : coins[0])));
@@ -222,7 +213,7 @@ export default function ExplorePage() {
     return () => {
       cancelled = true;
     };
-}, [coins]);
+  }, [coins]);
 
   if (loading) {
     return (
@@ -237,7 +228,7 @@ export default function ExplorePage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Channels Section */}
       <div className="mb-10">
         <div className="flex justify-between items-center mb-4">
@@ -288,45 +279,6 @@ export default function ExplorePage() {
         </div>
       </div>
 
-      {/* Featured Section */}
-      <div className="mb-10">
-        <h2 className="text-xl font-bold mb-4">Featured</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
-          {coins.slice(0, 3).map(c => {
-            const mediaUrl = c.mediaContent?.previewImage?.medium || c.mediaContent?.previewImage?.small || null;
-            return (
-              <Link href={`/post/${c.address}`} key={c.id}>
-                <div className="relative w-full aspect-[9/16] rounded-lg overflow-hidden cursor-pointer group border-2 border-primary">
-                  {mediaUrl ? (
-                    <Image
-                      src={mediaUrl}
-                      alt={c.name}
-                      width={400}
-                      height={400}
-                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-base-200 opacity-50">
-                      <span className="text-xs">No media</span>
-                    </div>
-                  )}
-                  <div className="absolute inset-x-0 bottom-0 p-3 text-white bg-gradient-to-t from-black/80 to-transparent">
-                    <div className="flex items-center mb-1">
-                      <h2 className="text-sm md:text-base font-semibold truncate leading-tight">{c.name}</h2>
-                    </div>
-                    <div className="flex flex-wrap gap-2 items-center text-xs opacity-80 mb-1">
-                      <span className="bg-black/40 rounded px-2 py-0.5">{c.symbol}</span>
-                      <span className="bg-black/40 rounded px-2 py-0.5">Marketcap: {c.marketCap}</span>
-                      <span className="bg-black/40 rounded px-2 py-0.5">Holders: {c.uniqueHolders}</span>
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
-      </div>
 
       {/* Categories Bar */}
       <div className="flex flex-wrap gap-2 mb-8 justify-center">
@@ -348,7 +300,7 @@ export default function ExplorePage() {
             <p className="text-sm opacity-50">Try a different category or check back later</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-1">
             {coins.map(c => {
               const mediaUrl = c.mediaContent?.previewImage?.medium || c.mediaContent?.previewImage?.small || null;
               const volumeChange = parseFloat(c.volume24h || "0");
@@ -356,18 +308,19 @@ export default function ExplorePage() {
 
               return (
                 <Link href={`/post/${c.address}`} key={c.id} className="block">
-                  <div className="relative w-full aspect-[9/16] rounded-xl overflow-hidden cursor-pointer">
+                  <div className="relative rounded-xl overflow-hidden cursor-pointer mx-auto" style={{ width: 240, height: 400 }}>
                     {mediaUrl ? (
-                      <Image
-                        src={mediaUrl}
-                        alt={c.name}
-                        width={400}
-                        height={600}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                      />
+                      <div className="flex items-center justify-center w-full h-full bg-base-200">
+                        <Image
+                          src={mediaUrl}
+                          alt={c.name}
+                          fill
+                          className="object-contain"
+                          loading="lazy"
+                        />
+                      </div>
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-base-200 opacity-50">
+                      <div className="flex items-center justify-center bg-base-200 opacity-50" style={{ width: 240, height: 400 }}>
                         <span className="text-xs">No media</span>
                       </div>
                     )}
@@ -396,7 +349,7 @@ export default function ExplorePage() {
                       </div>
                       <div className="bg-black/50 backdrop-blur-sm rounded-lg p-2 text-center w-full">
                         <h3 className="font-bold text-lg leading-tight truncate">{c.name}</h3>
-                        <p className="text-sm opacity-80 truncate">{c.description || "The spice must flow"}</p>
+                        <p className="text-sm opacity-80 whitespace-pre-line break-words max-h-24 overflow-y-auto">{c.description || "The spice must flow"}</p>
                       </div>
                     </div>
                     <div className="absolute bottom-0 inset-x-0 bg-base-300 p-2 flex flex-col items-center gap-1 rounded-b-xl">
