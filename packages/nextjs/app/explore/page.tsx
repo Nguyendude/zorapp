@@ -65,6 +65,54 @@ function safeFormatEther(wei: string | undefined): string {
   }
 }
 
+// Mock channels data (for demo)
+const mockChannels = [
+  {
+    id: "1",
+    name: "BunCoin",
+    creator: {
+      address: "0x1234...abcd",
+      avatar: "https://api.dicebear.com/7.x/identicon/svg?seed=0x1234abcd"
+    },
+    subscribers: 164,
+    symbol: "BUN COIN",
+    marketCap: "$3.7M"
+  },
+  {
+    id: "2",
+    name: "Feed The People",
+    creator: {
+      address: "0x5678...efgh",
+      avatar: "https://api.dicebear.com/7.x/identicon/svg?seed=0x5678efgh"
+    },
+    subscribers: 184,
+    symbol: "FTP",
+    marketCap: "$1.6M"
+  },
+  {
+    id: "3",
+    name: "Bagwork",
+    creator: {
+      address: "0x9abc...wxyz",
+      avatar: "https://api.dicebear.com/7.x/identicon/svg?seed=0x9abcwxyz"
+    },
+    subscribers: 2088,
+    symbol: "BAG",
+    marketCap: "$23.0M"
+  },
+  {
+    id: "4",
+    name: "Lenny",
+    creator: {
+      address: "0xdef0...1234",
+      avatar: "https://api.dicebear.com/7.x/identicon/svg?seed=0xdef01234"
+    },
+    subscribers: 492,
+    symbol: "LENNY",
+    marketCap: "$10.6K"
+  }
+];
+
 export default function ExplorePage() {
   const { address } = useAccount();
   const [coins, setCoins] = useState<CoinNode[]>([]);
@@ -191,6 +239,87 @@ export default function ExplorePage() {
 
   return (
   <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+      {/* Channels Section */}
+      <div className="mb-10">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-bold">Channels</h2>
+          <Link 
+            href="/channels" 
+            className="text-sm bg-base-200 hover:bg-base-300 px-3 py-1.5 rounded-lg transition-colors"
+          >
+            See all
+          </Link>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+          {mockChannels.map(channel => (
+            <div key={channel.id} className="bg-base-200 rounded-xl p-3 hover:bg-base-300 transition-all duration-200 cursor-pointer flex gap-3 items-center group">
+              <div className="relative">
+                <Image
+                  src={channel.creator.avatar}
+                  alt="creator avatar"
+                  width={50}
+                  height={50}
+                  className="rounded-lg border border-base-300"
+                  loading="lazy"
+                />
+                <div className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-success animate-pulse"></div>
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <h3 className="font-semibold truncate">{channel.name}</h3>
+                  <span className="text-xs bg-base-300 px-1.5 py-0.5 rounded-md">LIVE</span>
+                </div>
+                <div className="text-xs opacity-70 truncate">{channel.symbol}</div>
+                <div className="text-xs font-medium mt-0.5 text-success">Market cap: {channel.marketCap}</div>
+              </div>
+              <div className="text-xs opacity-60">
+                <div>replies: {channel.subscribers}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Featured Section */}
+      <div className="mb-10">
+        <h2 className="text-xl font-bold mb-4">Featured</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
+          {coins.slice(0, 3).map(c => {
+            const mediaUrl = c.mediaContent?.previewImage?.medium || c.mediaContent?.previewImage?.small || null;
+            return (
+              <Link href={`/post/${c.address}`} key={c.id}>
+                <div className="relative w-full aspect-[9/16] rounded-lg overflow-hidden cursor-pointer group border-2 border-primary">
+                  {mediaUrl ? (
+                    <Image
+                      src={mediaUrl}
+                      alt={c.name}
+                      width={400}
+                      height={400}
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-base-200 opacity-50">
+                      <span className="text-xs">No media</span>
+                    </div>
+                  )}
+                  <div className="absolute inset-x-0 bottom-0 p-3 text-white bg-gradient-to-t from-black/80 to-transparent">
+                    <div className="flex items-center mb-1">
+                      <h2 className="text-sm md:text-base font-semibold truncate leading-tight">{c.name}</h2>
+                    </div>
+                    <div className="flex flex-wrap gap-2 items-center text-xs opacity-80 mb-1">
+                      <span className="bg-black/40 rounded px-2 py-0.5">{c.symbol}</span>
+                      <span className="bg-black/40 rounded px-2 py-0.5">Marketcap: {c.marketCap}</span>
+                      <span className="bg-black/40 rounded px-2 py-0.5">Holders: {c.uniqueHolders}</span>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      </div>
 
       {/* Categories Bar */}
   <div className="flex flex-wrap gap-2 mb-8 justify-center">

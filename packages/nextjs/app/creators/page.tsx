@@ -65,9 +65,9 @@ export default function CreatorsPage() {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 w-full max-w-6xl">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 w-full max-w-6xl">
           {Array.from({ length: pageSize }).map((_, i) => (
-            <div key={i} className="animate-pulse bg-base-200 rounded-lg aspect-[9/16] w-full h-64" />
+            <div key={i} className="animate-pulse bg-base-200 rounded-lg aspect-[9/16] w-full min-w-[180px] min-h-[280px]" />
           ))}
         </div>
       </div>
@@ -75,11 +75,11 @@ export default function CreatorsPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <h1 className="text-2xl font-bold mb-8 text-center">Creators</h1>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
+  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {creators.map(([creator, coins]) => (
-          <div key={creator} className="relative w-full aspect-[9/16] rounded-lg overflow-hidden bg-base-200 group">
+          <div key={creator} className="relative w-full aspect-[9/16] min-w-[180px] min-h-[280px] rounded-lg overflow-hidden bg-base-200 group shadow-md">
             <div className="absolute inset-x-0 top-0 p-3 flex flex-col items-center">
               <Image
                 src={`https://api.dicebear.com/7.x/identicon/svg?seed=${creator}`}

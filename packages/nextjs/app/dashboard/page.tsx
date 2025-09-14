@@ -576,38 +576,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Quick Actions */}
-      <div className="bg-base-100 rounded-3xl shadow-lg p-6 mt-8">
-        <h3 className="text-xl font-semibold mb-4">Quick Actions</h3>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Link href="/" className="btn btn-outline">
-            <span className="text-xl mr-2">✍️</span>
-            Create New Post
-          </Link>
-          <Link href="/explore" className="btn btn-outline">
-            <span className="text-xl mr-2">🔍</span>
-            Explore Posts
-          </Link>
-          <a
-            href={`https://testnet.zora.co/@${address}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn btn-outline"
-          >
-            <span className="text-xl mr-2">🎭</span>
-            Your Zora Profile
-          </a>
-          <a
-            href="https://www.coinbase.com/faucets/base-ethereum-sepolia-faucet"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn btn-outline"
-          >
-            <span className="text-xl mr-2">🚰</span>
-            Get Test ETH
-          </a>
-        </div>
-      </div>
     </div>
   );
 }
