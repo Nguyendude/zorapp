@@ -1,11 +1,16 @@
-import { useMemo, useState } from "react";
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { getCoin, getCoinsLastTraded, getCoinsMostValuable, getCoinsNew, setApiKey } from "@zoralabs/coins-sdk";
 import { formatEther } from "viem";
 import { baseSepolia } from "viem/chains";
+import { useAccount } from "wagmi";
 
-setApiKey(process.env.NEXT_PUBLIC_ZORA_API_KEY || "");
+if (typeof window !== "undefined" && process.env.NEXT_PUBLIC_ZORA_API_KEY) {
+  setApiKey(process.env.NEXT_PUBLIC_ZORA_API_KEY);
+}
 
 interface CoinNode {
   id: string;
@@ -106,24 +111,81 @@ const mockChannels = [
   },
 ];
 
-export default async function ExplorePage() {
-  // Server-side data fetching for initial tab ("new")
-  setApiKey(process.env.NEXT_PUBLIC_ZORA_API_KEY || "");
-  const pageSize = 20;
-  let coins: CoinNode[] = [];
-  try {
-  const res = (await getCoinsNew({ count: pageSize })) as ExploreListResponse;
-    const edges = res.data?.exploreList?.edges || [];
-    coins = edges.map(({ node }) => ({
-      ...node,
-      totalSupply: safeFormatEther(node.totalSupply),
-      marketCap: safeFormatEther(node.marketCap),
-      volume24h: safeFormatEther(node.volume24h),
-    }));
-  } catch (err) {
-    console.error("Error fetching coins:", err);
-    coins = [];
-  }
+export default function ExplorePage() {
+  const { address } = useAccount();
+  const [coins, setCoins] = useState<CoinNode[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [activeFilter, setActiveFilter] = useState<'all' | 'my-posts'>('all');
+  const [retryCount, setRetryCount] = useState(0);
+
+  // Filter coins based on current filter
+  const filteredCoins = useMemo(() => {
+    if (!address || activeFilter === 'all') return coins;
+    return coins.filter(coin => 
+      coin.creatorAddress.toLowerCase() === address.toLowerCase()
+    );
+  }, [coins, activeFilter, address]);
+
+  // Fetch coins from multiple sources including local storage
+  const fetchCoins = async (retry = 0) => {
+    setLoading(true);
+    const allCoins: CoinNode[] = [];
+    const seenAddresses = new Set<string>();
+
+    // 1. Fetch from Zora API
+    try {
+      const res = (await getCoinsNew({ count: 20 })) as ExploreListResponse;
+      const edges = res.data?.exploreList?.edges || [];
+      const apiCoins = edges.map(({ node }) => ({
+        ...node,
+        totalSupply: safeFormatEther(node.totalSupply),
+        marketCap: safeFormatEther(node.marketCap),
+        volume24h: safeFormatEther(node.volume24h),
+      }));
+
+      apiCoins.forEach(coin => {
+        if (!seenAddresses.has(coin.address)) {
+          seenAddresses.add(coin.address);
+          allCoins.push(coin);
+        }
+      });
+    } catch (err) {
+      console.error("Error fetching from Zora API:", err);
+      if (retry < 3) {
+        // Exponential backoff retry
+        const delay = Math.pow(2, retry) * 1000;
+        await new Promise(resolve => setTimeout(resolve, delay));
+        return fetchCoins(retry + 1);
+      }
+      setError("Failed to fetch coins from Zora. Please try again later.");
+    }
+
+    // 2. Add manually added coins from localStorage
+    try {
+      if (typeof window !== "undefined") {
+        const cachedCoins = localStorage.getItem(`user_coins_${address}`);
+        if (cachedCoins) {
+          const parsed = JSON.parse(cachedCoins);
+          parsed.forEach((coin: CoinNode) => {
+            if (!seenAddresses.has(coin.address)) {
+              seenAddresses.add(coin.address);
+              allCoins.push(coin);
+            }
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error loading cached coins:", error);
+    }
+
+    setCoins(allCoins);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchCoins();
+  }, [address]);
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -181,27 +243,79 @@ export default async function ExplorePage() {
       </div>
 
       {/* Categories Bar */}
-      <div className="flex flex-wrap gap-2 mb-8 justify-center">
-        {["Featured", "Trending", "Pop Culture", "Music", "Sports", "Events", "All"].map(category => (
-          <button
-            key={category}
-            className="btn btn-sm btn-outline rounded-full px-4 py-1 text-base font-medium"
-            // onClick={() => setActiveCategory(category)}
-          >
-            {category}
-          </button>
-        ))}
+      {/* Filter Buttons */}
+      <div className="flex flex-wrap gap-4 mb-8 justify-center">
+        <button
+          onClick={() => setActiveFilter('all')}
+          className={`btn btn-sm ${activeFilter === 'all' ? 'btn-primary' : 'btn-outline'} rounded-full px-6`}
+        >
+          All Posts
+        </button>
+        <button
+          onClick={() => setActiveFilter('my-posts')}
+          className={`btn btn-sm ${activeFilter === 'my-posts' ? 'btn-primary' : 'btn-outline'} rounded-full px-6`}
+          disabled={!address}
+        >
+          My Posts
+        </button>
+
+        <button
+          onClick={() => {
+            setError(null);
+            setLoading(true);
+            fetchCoins();
+          }}
+          className="btn btn-sm btn-outline rounded-full px-4"
+          disabled={loading}
+        >
+          🔄 Refresh
+        </button>
       </div>
 
+      {/* Error Display */}
+      {error && (
+        <div className="alert alert-error mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span>{error}</span>
+          <button onClick={() => {
+            setError(null);
+            setLoading(true);
+            fetchCoins();
+          }} className="btn btn-sm">Retry</button>
+        </div>
+      )}
+
       <div className="tabs tabs-boxed mb-8 bg-transparent">
-        {coins.length === 0 ? (
+        {loading ? (
           <div className="text-center py-12">
-            <p className="text-xl opacity-70">No coins found</p>
-            <p className="text-sm opacity-50">Try a different category or check back later</p>
+            <div className="loading loading-spinner loading-lg"></div>
+            <p className="text-sm opacity-50 mt-2">Loading coins...</p>
+          </div>
+        ) : filteredCoins.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-xl opacity-70">
+              {activeFilter === 'my-posts' 
+                ? address 
+                  ? "You haven't created any posts yet" 
+                  : "Please connect your wallet to view your posts"
+                : "No coins found"}
+            </p>
+            <p className="text-sm opacity-50 mb-4">
+              {activeFilter === 'my-posts' 
+                ? "Create a new post to get started!"
+                : "Try refreshing or check back later"}
+            </p>
+            {activeFilter === 'my-posts' && address && (
+              <Link href="/" className="btn btn-primary">
+                Create New Post
+              </Link>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-1">
-            {coins.map(c => {
+            {filteredCoins.map(c => {
               const mediaUrl = c.mediaContent?.previewImage?.medium || c.mediaContent?.previewImage?.small || null;
               const volumeChange = parseFloat(c.volume24h || "0");
               const changeColorClass = volumeChange >= 0 ? "text-success" : "text-error";
