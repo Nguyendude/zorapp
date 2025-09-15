@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-// import Image from "next/image";
+import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { getCoin, setApiKey } from "@zoralabs/coins-sdk";
@@ -9,57 +9,10 @@ import { formatEther } from "viem";
 import { baseSepolia } from "viem/chains";
 import { useAccount } from "wagmi";
 import { notification } from "~~/utils/scaffold-eth";
+import type { CoinData } from "@zoralabs/coins-sdk";
 
-// Set API key
 if (typeof window !== "undefined" && process.env.NEXT_PUBLIC_ZORA_API_KEY) {
   setApiKey(process.env.NEXT_PUBLIC_ZORA_API_KEY);
-}
-
-// Safe BigInt conversion helper function
-function safeBigIntString(value: string | undefined | null): string {
-  if (!value || value === "") return "0";
-
-  // Handle zero values (including "0.0")
-  const floatVal = parseFloat(value);
-  if (isNaN(floatVal) || floatVal <= 0) return "0";
-
-  // Convert to integer string (removes decimal part)
-  return Math.floor(floatVal).toString();
-}
-
-// Safe formatter function for displaying ETH values
-function safeFormatEther(value: string | undefined | null): string {
-  try {
-    const safeValue = safeBigIntString(value);
-    if (safeValue === "0") return "0";
-    return formatEther(BigInt(safeValue));
-  } catch (error) {
-    console.warn("Error formatting ether value:", value, error);
-    return "0";
-  }
-}
-
-interface CoinData {
-  id: string;
-  name: string;
-  symbol: string;
-  description: string;
-  address: string;
-  totalSupply: string;
-  totalVolume: string;
-  volume24h: string;
-  marketCap: string;
-  createdAt: string;
-  creatorAddress: string;
-  uniqueHolders: number;
-  chainId: number;
-  mediaContent?: {
-    previewImage?: {
-      small?: string;
-      medium?: string;
-      large?: string;
-    };
-  };
 }
 
 export default function PostDetailPage() {
@@ -72,41 +25,14 @@ export default function PostDetailPage() {
   useEffect(() => {
     const fetchCoinData = async () => {
       if (!params.id) return;
-
       setLoading(true);
       setError(null);
-
       try {
         const coinAddress = params.id as string;
-        console.log("Fetching coin data for address:", coinAddress);
-
-        const response = await getCoin({
-          address: coinAddress,
-          chain: baseSepolia.id,
-        });
-
-        console.log("Coin response:", response);
-
-        const coin = response.data?.zora20Token;
-
+        const response = await getCoin({ address: coinAddress, chain: baseSepolia.id });
+        const coin = response?.data?.zora20Token;
         if (coin) {
-          setCoinData({
-            id: coin.id,
-            name: coin.name || "Untitled Post",
-            symbol: coin.symbol || "POST",
-            description: coin.description || "",
-            address: coin.address,
-            // Use safe conversion for all numeric values
-            totalSupply: coin.totalSupply || "0",
-            totalVolume: coin.totalVolume || "0",
-            volume24h: coin.volume24h || "0",
-            marketCap: coin.marketCap || "0",
-            createdAt: coin.createdAt || "",
-            creatorAddress: coin.creatorAddress || "",
-            uniqueHolders: coin.uniqueHolders || 0,
-            chainId: coin.chainId || baseSepolia.id,
-            mediaContent: coin.mediaContent,
-          });
+          setCoinData({ ...coin });
         } else {
           setError("Coin not found");
         }
@@ -123,61 +49,38 @@ export default function PostDetailPage() {
         setLoading(false);
       }
     };
-
     fetchCoinData();
   }, [params.id]);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="loading loading-spinner loading-lg mb-4"></div>
-          <p>Loading coin data...</p>
-        </div>
-      </div>
-    );
+  function safeBigIntString(value: string | undefined | null): string {
+    if (!value || value === "") return "0";
+    const floatVal = parseFloat(value);
+    if (isNaN(floatVal) || floatVal <= 0) return "0";
+    return Math.floor(floatVal).toString();
   }
 
-  if (error) {
-    return (
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="alert alert-error mb-8">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="stroke-current shrink-0 h-6 w-6"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-          <span>{error}</span>
-        </div>
-        <div className="text-center">
-          <Link href="/dashboard" className="btn btn-primary mr-4">
-            Back to Dashboard
-          </Link>
-          <Link href="/" className="btn btn-outline">
-            Create New Post
-          </Link>
-        </div>
-      </div>
-    );
+  function safeFormatEther(value: string | undefined | null): string {
+    try {
+      const safeValue = safeBigIntString(value);
+      if (safeValue === "0") return "0";
+      return formatEther(BigInt(safeValue));
+    } catch (error) {
+      console.warn("Error formatting ether value:", value, error);
+      return "0";
+    }
   }
 
   if (!coinData) {
     return (
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="alert alert-warning">
-          <span>No coin data found</span>
+        <div>
+          <div className="alert alert-warning">
+            <span>No coin data found</span>
+          </div>
+          <Link href="/dashboard" className="btn btn-primary mt-4">
+            Back to Dashboard
+          </Link>
         </div>
-        <Link href="/dashboard" className="btn btn-primary mt-4">
-          Back to Dashboard
-        </Link>
       </div>
     );
   }
@@ -195,7 +98,7 @@ export default function PostDetailPage() {
           <li>
             <Link href="/explore">Explore</Link>
           </li>
-          <li>{coinData.name}</li>
+  {coinData && <li>{coinData.name}</li>}
         </ul>
       </div>
 
@@ -203,22 +106,28 @@ export default function PostDetailPage() {
         <div className="lg:col-span-2">
           <div className="card bg-base-100 shadow-xl">
             <div className="card-body">
-              {coinData.mediaContent?.previewImage && (
-                <div className="mb-6">
-                  <img
-                    src={coinData.mediaContent.previewImage.medium || coinData.mediaContent.previewImage.small || ""}
-                    alt={coinData.name}
-                    className="w-full h-64 object-cover rounded-lg"
+              {coinData && coinData.mediaContent?.previewImage && (
+                <div className="mb-6" style={{ position: "relative", width: "100%", height: "256px" }}>
+                  {/* Use Next.js Image for optimized loading and performance */}
+                  <Image
+                    src={coinData && (coinData.mediaContent?.previewImage?.medium || coinData.mediaContent?.previewImage?.small) || ""}
+                    alt={coinData ? coinData.name : ""}
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 800px"
+                    priority
+                    style={{ objectFit: "cover", borderRadius: "0.5rem" }}
                   />
                 </div>
               )}
 
-              <h1 className="card-title text-3xl mb-4">{coinData.name}</h1>
+              {coinData && <h1 className="card-title text-3xl mb-4">{coinData.name}</h1>}
 
               <div className="flex items-center gap-4 mb-6">
                 <div className="avatar placeholder">
                   <div className="bg-neutral text-neutral-content rounded-full w-12">
-                    <span className="text-2xl mx-3 my-3">{coinData.creatorAddress.slice(2, 4).toUpperCase()}</span>
+                    <span className="text-2xl mx-3 my-3">
+                      {coinData.creatorAddress ? coinData.creatorAddress.slice(2, 4).toUpperCase() : "--"}
+                    </span>
                   </div>
                 </div>
                 <div>
@@ -227,7 +136,7 @@ export default function PostDetailPage() {
                     {coinData.createdAt ? new Date(coinData.createdAt).toLocaleDateString() : "Unknown date"}
                   </p>
                 </div>
-                {coinData.creatorAddress.toLowerCase() === address?.toLowerCase() && (
+                {coinData.creatorAddress && coinData.creatorAddress.toLowerCase() === address?.toLowerCase() && (
                   <div className="badge badge-primary">Your Post</div>
                 )}
               </div>
@@ -240,7 +149,6 @@ export default function PostDetailPage() {
 
               <div className="divider"></div>
 
-              {/* Fixed statistics using safe formatters */}
               <div className="stats stats-horizontal shadow">
                 <div className="stat">
                   <div className="stat-title">Market Cap</div>

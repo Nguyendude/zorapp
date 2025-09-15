@@ -112,7 +112,7 @@ export default async function ExplorePage() {
   const pageSize = 20;
   let coins: CoinNode[] = [];
   try {
-    const res = (await getCoinsNew({ count: pageSize })) as ExploreListResponse;
+  const res = (await getCoinsNew({ count: pageSize })) as ExploreListResponse;
     const edges = res.data?.exploreList?.edges || [];
     coins = edges.map(({ node }) => ({
       ...node,
