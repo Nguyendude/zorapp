@@ -31,6 +31,6 @@ async function fetchVolumeStats() {
   // Implement your logic to fetch volume statistics
   return {
     totalVolume24h: BigInt(0),
-    topTraded: []
+    topTraded: [],
   };
 }

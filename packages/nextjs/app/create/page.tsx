@@ -117,7 +117,7 @@ export default function CreatePage() {
         address: coinAddress,
         deployment: result.deployment,
       });
-      
+
       // Send Telegram notification
       await sendNewPostNotification({
         title: blogPost.title,
@@ -126,7 +126,7 @@ export default function CreatePage() {
         content: blogPost.content,
         marketCap: BigInt(0),
         totalSupply: BigInt("1000000000000000000000000000"), // 1B tokens
-        mediaUrl: imageFile ? URL.createObjectURL(imageFile) : undefined
+        mediaUrl: imageFile ? URL.createObjectURL(imageFile) : undefined,
       });
 
       notification.success("🎉 New coin launched!");
@@ -159,7 +159,7 @@ export default function CreatePage() {
 
   return (
     <div className="flex items-center flex-col flex-grow pt-10">
-  <div className="px-5 w-full max-w-6xl">
+      <div className="px-5 w-full max-w-6xl">
         <h1 className="text-4xl font-bold text-center mb-8">📝 PostMint - Publish to Earn</h1>
         <div className="bg-base-100 rounded-3xl shadow-lg p-8 mb-8">
           <h2 className="text-2xl font-semibold mb-6">Create your Content Coin</h2>
@@ -312,5 +312,3 @@ export default function CreatePage() {
     </div>
   );
 }
-
-

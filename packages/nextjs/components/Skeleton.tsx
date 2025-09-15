@@ -18,12 +18,7 @@ const roundedMap: Record<NonNullable<SkeletonProps["rounded"]>, string> = {
 export const Skeleton: React.FC<SkeletonProps> = ({ className = "", rounded = "md", shimmer = true }) => {
   return (
     <div
-      className={[
-        "bg-base-300/70",
-        roundedMap[rounded],
-        shimmer ? "animate-pulse" : "",
-        className,
-      ].join(" ")}
+      className={["bg-base-300/70", roundedMap[rounded], shimmer ? "animate-pulse" : "", className].join(" ")}
       aria-hidden
       role="presentation"
     />
@@ -48,7 +43,7 @@ export const SkeletonAvatar: React.FC<{ size?: number; className?: string }> = (
 
 export const SkeletonCard: React.FC<{ className?: string }> = ({ className = "" }) => {
   return (
-    <div className={["p-4 border border-base-200 rounded-xl", className].join(" ")}> 
+    <div className={["p-4 border border-base-200 rounded-xl", className].join(" ")}>
       <div className="flex items-center gap-3">
         <Skeleton className="h-10 w-10" rounded="full" />
         <div className="flex-1">
@@ -65,5 +60,3 @@ export const SkeletonCard: React.FC<{ className?: string }> = ({ className = "" 
 };
 
 export default Skeleton;
-
-

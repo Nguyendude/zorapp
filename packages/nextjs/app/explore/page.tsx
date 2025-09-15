@@ -5,9 +5,7 @@ import { getCoin, getCoinsLastTraded, getCoinsMostValuable, getCoinsNew, setApiK
 import { formatEther } from "viem";
 import { baseSepolia } from "viem/chains";
 
-
 setApiKey(process.env.NEXT_PUBLIC_ZORA_API_KEY || "");
-
 
 interface CoinNode {
   id: string;
@@ -108,14 +106,13 @@ const mockChannels = [
   },
 ];
 
-
 export default async function ExplorePage() {
   // Server-side data fetching for initial tab ("new")
   setApiKey(process.env.NEXT_PUBLIC_ZORA_API_KEY || "");
   const pageSize = 20;
   let coins: CoinNode[] = [];
   try {
-    const res = await getCoinsNew({ count: pageSize }) as ExploreListResponse;
+    const res = (await getCoinsNew({ count: pageSize })) as ExploreListResponse;
     const edges = res.data?.exploreList?.edges || [];
     coins = edges.map(({ node }) => ({
       ...node,
@@ -129,12 +126,15 @@ export default async function ExplorePage() {
   }
 
   return (
-  <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Channels Section */}
       <div className="mb-10">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold">Channels</h2>
-          <Link href="/channels" className="text-sm bg-base-200 hover:bg-base-300 px-3 py-1.5 rounded-lg transition-colors">
+          <Link
+            href="/channels"
+            className="text-sm bg-base-200 hover:bg-base-300 px-3 py-1.5 rounded-lg transition-colors"
+          >
             See all
           </Link>
         </div>
@@ -180,7 +180,6 @@ export default async function ExplorePage() {
         </div>
       </div>
 
-
       {/* Categories Bar */}
       <div className="flex flex-wrap gap-2 mb-8 justify-center">
         {["Featured", "Trending", "Pop Culture", "Music", "Sports", "Events", "All"].map(category => (
@@ -209,19 +208,19 @@ export default async function ExplorePage() {
 
               return (
                 <Link href={`/post/${c.address}`} key={c.id} className="block">
-                  <div className="relative rounded-xl overflow-hidden cursor-pointer mx-auto" style={{ width: 240, height: 400 }}>
+                  <div
+                    className="relative rounded-xl overflow-hidden cursor-pointer mx-auto"
+                    style={{ width: 240, height: 400 }}
+                  >
                     {mediaUrl ? (
                       <div className="flex items-center justify-center w-full h-full bg-base-200">
-                        <Image
-                          src={mediaUrl}
-                          alt={c.name}
-                          fill
-                          className="object-contain"
-                          loading="lazy"
-                        />
+                        <Image src={mediaUrl} alt={c.name} fill className="object-contain" loading="lazy" />
                       </div>
                     ) : (
-                      <div className="flex items-center justify-center bg-base-200 opacity-50" style={{ width: 240, height: 400 }}>
+                      <div
+                        className="flex items-center justify-center bg-base-200 opacity-50"
+                        style={{ width: 240, height: 400 }}
+                      >
                         <span className="text-xs">No media</span>
                       </div>
                     )}
@@ -244,13 +243,13 @@ export default async function ExplorePage() {
                             {c.creatorAddress.substring(c.creatorAddress.length - 4)}
                           </span>
                         </div>
-                        <div className="bg-black/50 rounded-full px-2 py-0.5 text-xs font-semibold">
-                          1d
-                        </div>
+                        <div className="bg-black/50 rounded-full px-2 py-0.5 text-xs font-semibold">1d</div>
                       </div>
                       <div className="bg-black/50 backdrop-blur-sm rounded-lg p-2 text-center w-full">
                         <h3 className="font-bold text-lg leading-tight truncate">{c.name}</h3>
-                        <p className="text-sm opacity-80 whitespace-pre-line break-words max-h-24 overflow-y-auto">{c.description || "The spice must flow"}</p>
+                        <p className="text-sm opacity-80 whitespace-pre-line break-words max-h-24 overflow-y-auto">
+                          {c.description || "The spice must flow"}
+                        </p>
                       </div>
                     </div>
                     <div className="absolute bottom-0 inset-x-0 bg-base-300 p-2 flex flex-col items-center gap-1 rounded-b-xl">
@@ -281,7 +280,6 @@ export default async function ExplorePage() {
             })}
           </div>
         )}
-
       </div>
     </div>
   );

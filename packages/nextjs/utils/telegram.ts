@@ -5,11 +5,11 @@ const TELEGRAM_CHANNEL_ID = process.env.TELEGRAM_CHANNEL_ID;
 
 // Utility function to format numbers safely
 const safeFormatEther = (value?: string | bigint | null): string => {
-  if (!value) return '0';
+  if (!value) return "0";
   try {
-    return formatEther(typeof value === 'string' ? parseEther(value) : value);
+    return formatEther(typeof value === "string" ? parseEther(value) : value);
   } catch {
-    return '0';
+    return "0";
   }
 };
 
@@ -51,10 +51,10 @@ interface TradeNotificationProps {
 }
 
 interface EarningsNotificationProps {
-  type: 'channel' | 'creator' | 'coin' | 'post';
+  type: "channel" | "creator" | "coin" | "post";
   name: string;
   earnings: bigint;
-  timeframe: '24h' | '7d' | '30d' | 'all';
+  timeframe: "24h" | "7d" | "30d" | "all";
   growth?: number; // Percentage growth
   totalTrades?: number;
   uniqueTraders?: number;
@@ -120,19 +120,16 @@ const sendTelegramMessage = async (message: TelegramMessage) => {
   }
 
   try {
-    const response = await fetch(
-      `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          chat_id: TELEGRAM_CHANNEL_ID,
-          ...message,
-        }),
-      }
-    );
+    const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        chat_id: TELEGRAM_CHANNEL_ID,
+        ...message,
+      }),
+    });
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -149,26 +146,19 @@ const sendTelegramMediaMessage = async (mediaMessage: TelegramMediaMessage) => {
   }
 
   try {
-    const endpoint = mediaMessage.photo 
-      ? "sendPhoto"
-      : mediaMessage.video 
-      ? "sendVideo"
-      : null;
+    const endpoint = mediaMessage.photo ? "sendPhoto" : mediaMessage.video ? "sendVideo" : null;
 
     if (!endpoint) {
       throw new Error("No media provided");
     }
 
-    const response = await fetch(
-      `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/${endpoint}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(mediaMessage),
-      }
-    );
+    const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/${endpoint}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(mediaMessage),
+    });
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -260,7 +250,7 @@ export const sendTradeNotification = async ({
 
 export const sendLeaderboardUpdate = async ({ topChannels }: LeaderboardUpdateProps) => {
   let message = "🏆 TOP CHANNELS BY MARKET CAP\n\n";
-  
+
   topChannels.forEach((channel: Channel, index: number) => {
     message += `${index + 1}. ${channel.name}
 💰 MC: $${safeFormatEther(channel.volume)}
@@ -306,17 +296,17 @@ export const sendEarningsNotification = async ({
   mediaUrl,
 }: EarningsNotificationProps) => {
   const typeEmoji = {
-    channel: '📢',
-    creator: '👨‍🎨',
-    coin: '🪙',
-    post: '📝'
+    channel: "📢",
+    creator: "👨‍🎨",
+    coin: "🪙",
+    post: "📝",
   }[type];
 
   const timeframeText = {
-    '24h': 'Last 24 Hours',
-    '7d': 'Last 7 Days',
-    '30d': 'Last 30 Days',
-    'all': 'All Time'
+    "24h": "Last 24 Hours",
+    "7d": "Last 7 Days",
+    "30d": "Last 30 Days",
+    all: "All Time",
   }[timeframe];
 
   let messageText = `${typeEmoji} ${type.toUpperCase()} EARNINGS UPDATE
@@ -326,8 +316,8 @@ export const sendEarningsNotification = async ({
 ⏰ Period: ${timeframeText}`;
 
   if (growth !== undefined) {
-    const growthEmoji = growth >= 0 ? '📈' : '📉';
-    messageText += `\n${growthEmoji} Growth: ${growth > 0 ? '+' : ''}${growth.toFixed(2)}%`;
+    const growthEmoji = growth >= 0 ? "📈" : "📉";
+    messageText += `\n${growthEmoji} Growth: ${growth > 0 ? "+" : ""}${growth.toFixed(2)}%`;
   }
 
   if (totalTrades) {
