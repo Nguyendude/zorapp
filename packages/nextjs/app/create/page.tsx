@@ -94,12 +94,32 @@ export default function CreatePage() {
         transport: http(),
       });
       notification.info("📝 Creating metadata...");
-      const { createMetadataParameters } = await createMetadataBuilder()
+      // Enhanced metadata creation with proper indexing hints
+      const metadataBuilder = createMetadataBuilder()
         .withName(blogPost.title.trim())
         .withSymbol(blogPost.symbol || "POST")
         .withDescription(blogPost.content.trim() || "NO CONTENT")
         .withImage(imageFile)
-        .upload(createZoraUploaderForCreator(connectedAddress as Address));
+        // Add additional metadata for better indexing
+        .withAttributes([
+          { trait_type: "type", value: "blog_post" },
+          { trait_type: "platform", value: "PostMint" },
+          { trait_type: "chain", value: "base-sepolia" },
+          { trait_type: "creator", value: connectedAddress }
+        ]);
+
+      // Create metadata with proper creator attribution
+      const { createMetadataParameters } = await metadataBuilder.upload(
+        createZoraUploaderForCreator(connectedAddress as Address, {
+          // Add indexing hints
+          indexerHints: {
+            includedInExplore: true,
+            priority: "high",
+            mediaType: "image",
+            contentType: "blog_post"
+          }
+        })
+      );
       notification.info("✅ Metadata uploaded to IPFS!");
       const coinParams = {
         ...createMetadataParameters,
@@ -117,6 +137,29 @@ export default function CreatePage() {
         address: coinAddress,
         deployment: result.deployment,
       });
+
+      // Notify indexer about new coin creation
+      try {
+        const indexerNotification = await fetch("https://api.zora.co/v1/indexer/notify", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-API-KEY": process.env.NEXT_PUBLIC_ZORA_API_KEY || ""
+          },
+          body: JSON.stringify({
+            chainId: baseSepolia.id,
+            contractAddress: coinAddress,
+            eventType: "NEW_COIN",
+            metadata: createMetadataParameters
+          })
+        });
+
+        if (!indexerNotification.ok) {
+          console.warn("Indexer notification failed, coin might take longer to appear");
+        }
+      } catch (error) {
+        console.warn("Failed to notify indexer:", error);
+      }
 
       // Send Telegram notification
       await sendNewPostNotification({

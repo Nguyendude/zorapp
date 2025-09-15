@@ -26,6 +26,8 @@ interface CoinNode {
   description?: string;
   totalVolume?: string;
   uniswapV3PoolAddress?: string;
+  source?: 'local' | 'zora';
+  isVerified?: boolean;
   mediaContent?: {
     previewImage?: {
       small?: string;
@@ -116,24 +118,66 @@ export default function ExplorePage() {
   const [coins, setCoins] = useState<CoinNode[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeFilter, setActiveFilter] = useState<'all' | 'my-posts'>('all');
+  const [activeFilter, setActiveFilter] = useState<'all' | 'my-posts' | 'postmint' | 'trending' | 'recent'>('all');
   const [retryCount, setRetryCount] = useState(0);
 
   // Filter coins based on current filter
   const filteredCoins = useMemo(() => {
-    if (!address || activeFilter === 'all') return coins;
-    return coins.filter(coin => 
-      coin.creatorAddress.toLowerCase() === address.toLowerCase()
-    );
+    switch(activeFilter) {
+      case 'my-posts':
+        return address ? coins.filter(coin => 
+          coin.creatorAddress.toLowerCase() === address.toLowerCase()
+        ) : [];
+      case 'postmint':
+        return coins.filter(coin => coin.source === 'local');
+      case 'trending':
+        return coins.filter(coin => parseFloat(coin.volume24h || "0") > 0)
+          .sort((a, b) => parseFloat(b.volume24h || "0") - parseFloat(a.volume24h || "0"));
+      case 'recent':
+        return [...coins].sort((a, b) => 
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+      default:
+        return coins;
+    }
   }, [coins, activeFilter, address]);
 
-  // Fetch coins from multiple sources including local storage
+  // Enhanced coin fetching from multiple sources
   const fetchCoins = async (retry = 0) => {
     setLoading(true);
     const allCoins: CoinNode[] = [];
     const seenAddresses = new Set<string>();
 
-    // 1. Fetch from Zora API
+    // 1. First priority: Get locally created/cached coins
+    try {
+      if (typeof window !== "undefined") {
+        // Get all users' coins from localStorage
+        const allKeys = Object.keys(localStorage);
+        const coinKeys = allKeys.filter(key => key.startsWith('user_coins_'));
+        
+        for (const key of coinKeys) {
+          const cachedCoins = localStorage.getItem(key);
+          if (cachedCoins) {
+            const parsed = JSON.parse(cachedCoins);
+            parsed.forEach((coin: CoinNode) => {
+              if (!seenAddresses.has(coin.address)) {
+                seenAddresses.add(coin.address);
+                // Add source flag for UI indication
+                allCoins.push({
+                  ...coin,
+                  source: 'local',
+                  isVerified: true // These are verified since they're created through our platform
+                });
+              }
+            });
+          }
+        }
+      }
+    } catch (error) {
+      console.warn("Error loading cached coins:", error);
+    }
+
+    // 2. Second priority: Try Zora API for additional coins
     try {
       const res = (await getCoinsNew({ count: 20 })) as ExploreListResponse;
       const edges = res.data?.exploreList?.edges || [];
@@ -142,6 +186,8 @@ export default function ExplorePage() {
         totalSupply: safeFormatEther(node.totalSupply),
         marketCap: safeFormatEther(node.marketCap),
         volume24h: safeFormatEther(node.volume24h),
+        source: 'zora',
+        isVerified: true
       }));
 
       apiCoins.forEach(coin => {
@@ -151,14 +197,8 @@ export default function ExplorePage() {
         }
       });
     } catch (err) {
-      console.error("Error fetching from Zora API:", err);
-      if (retry < 3) {
-        // Exponential backoff retry
-        const delay = Math.pow(2, retry) * 1000;
-        await new Promise(resolve => setTimeout(resolve, delay));
-        return fetchCoins(retry + 1);
-      }
-      setError("Failed to fetch coins from Zora. Please try again later.");
+      console.warn("Error fetching from Zora API:", err);
+      // Don't set error - we still have local coins to show
     }
 
     // 2. Add manually added coins from localStorage
@@ -243,20 +283,37 @@ export default function ExplorePage() {
       </div>
 
       {/* Categories Bar */}
-      {/* Filter Buttons */}
       <div className="flex flex-wrap gap-4 mb-8 justify-center">
         <button
           onClick={() => setActiveFilter('all')}
           className={`btn btn-sm ${activeFilter === 'all' ? 'btn-primary' : 'btn-outline'} rounded-full px-6`}
         >
-          All Posts
+          🌐 All
+        </button>
+        <button
+          onClick={() => setActiveFilter('postmint')}
+          className={`btn btn-sm ${activeFilter === 'postmint' ? 'btn-primary' : 'btn-outline'} rounded-full px-6`}
+        >
+          📝 PostMint
+        </button>
+        <button
+          onClick={() => setActiveFilter('trending')}
+          className={`btn btn-sm ${activeFilter === 'trending' ? 'btn-primary' : 'btn-outline'} rounded-full px-6`}
+        >
+          🔥 Trending
+        </button>
+        <button
+          onClick={() => setActiveFilter('recent')}
+          className={`btn btn-sm ${activeFilter === 'recent' ? 'btn-primary' : 'btn-outline'} rounded-full px-6`}
+        >
+          ⭐ Recent
         </button>
         <button
           onClick={() => setActiveFilter('my-posts')}
           className={`btn btn-sm ${activeFilter === 'my-posts' ? 'btn-primary' : 'btn-outline'} rounded-full px-6`}
           disabled={!address}
         >
-          My Posts
+          👤 My Posts
         </button>
 
         <button
@@ -352,12 +409,26 @@ export default function ExplorePage() {
                               />
                             </div>
                           )}
-                          <span className="text-xs font-semibold opacity-80">
-                            @{c.creatorAddress.substring(2, 6)}...
-                            {c.creatorAddress.substring(c.creatorAddress.length - 4)}
-                          </span>
+                          <div className="flex items-center gap-1">
+                            <span className="text-xs font-semibold opacity-80">
+                              @{c.creatorAddress.substring(2, 6)}...
+                              {c.creatorAddress.substring(c.creatorAddress.length - 4)}
+                            </span>
+                            {c.source === 'local' && (
+                              <span className="bg-primary text-primary-content text-xs px-1.5 py-0.5 rounded-full">
+                                PostMint
+                              </span>
+                            )}
+                            {c.source === 'zora' && (
+                              <span className="bg-secondary text-secondary-content text-xs px-1.5 py-0.5 rounded-full">
+                                Zora
+                              </span>
+                            )}
+                          </div>
                         </div>
-                        <div className="bg-black/50 rounded-full px-2 py-0.5 text-xs font-semibold">1d</div>
+                        <div className="bg-black/50 rounded-full px-2 py-0.5 text-xs font-semibold">
+                          {new Date(c.createdAt).toLocaleDateString()}
+                        </div>
                       </div>
                       <div className="bg-black/50 backdrop-blur-sm rounded-lg p-2 text-center w-full">
                         <h3 className="font-bold text-lg leading-tight truncate">{c.name}</h3>
