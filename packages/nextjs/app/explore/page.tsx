@@ -7,6 +7,7 @@ import { getCoin, getCoinsLastTraded, getCoinsMostValuable, getCoinsNew, setApiK
 import { formatEther } from "viem";
 import { baseSepolia } from "viem/chains";
 import { useAccount } from "wagmi";
+import { usePostStore } from "~~/services/store/postStore";
 
 if (typeof window !== "undefined" && process.env.NEXT_PUBLIC_ZORA_API_KEY) {
   setApiKey(process.env.NEXT_PUBLIC_ZORA_API_KEY);
@@ -118,25 +119,121 @@ export default function ExplorePage() {
   const [coins, setCoins] = useState<CoinNode[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeFilter, setActiveFilter] = useState<'all' | 'my-posts' | 'postmint' | 'trending' | 'recent'>('all');
+  const [activeFilter, setActiveFilter] = useState<'all' | 'my-posts' | 'on-chain' | 'trending' | 'recent'>('all');
   const [retryCount, setRetryCount] = useState(0);
+  
+  // Get posts from our local contract store
+  const contractPosts = usePostStore(state => state.posts);
 
   // Filter coins based on current filter
   const filteredCoins = useMemo(() => {
     switch(activeFilter) {
       case 'my-posts':
-        return address ? coins.filter(coin => 
-          coin.creatorAddress.toLowerCase() === address.toLowerCase()
-        ) : [];
-      case 'postmint':
-        return coins.filter(coin => coin.source === 'local');
+        return address ? [
+          ...coins.filter(coin => coin.creatorAddress.toLowerCase() === address.toLowerCase()),
+          ...contractPosts
+            .filter(post => post.author.toLowerCase() === address.toLowerCase())
+            .map(post => ({
+              id: post.id.toString(),
+              name: post.title,
+              symbol: post.symbol,
+              address: post.coinAddress,
+              creatorAddress: post.author,
+              totalSupply: post.totalSupply.toString(),
+              marketCap: (post.marketCap || BigInt(0)).toString(),
+              volume24h: "0",
+              createdAt: new Date(post.createdAt).toISOString(),
+              uniqueHolders: "1",
+              description: post.content,
+              source: 'local' as const,
+              isVerified: true,
+              mediaContent: {
+                previewImage: {
+                  small: post.imageUrl,
+                  medium: post.imageUrl,
+                  large: post.imageUrl,
+                }
+              }
+            })) as CoinNode[]
+        ] : [];
+      case 'on-chain':
+        // Show posts from our contract events
+        return contractPosts.map(post => ({
+          id: post.id.toString(),
+          name: post.title,
+          symbol: post.symbol,
+          address: post.coinAddress,
+          creatorAddress: post.author,
+          totalSupply: post.totalSupply.toString(),
+          marketCap: (post.marketCap || BigInt(0)).toString(),
+          volume24h: "0",
+          createdAt: new Date(post.createdAt).toISOString(),
+          uniqueHolders: "1",
+          description: post.content,
+          source: 'local' as const,
+          isVerified: true,
+          mediaContent: {
+            previewImage: {
+              small: post.imageUrl,
+              medium: post.imageUrl,
+              large: post.imageUrl,
+            }
+          }
+        })) as CoinNode[];
       case 'trending':
-        return coins.filter(coin => parseFloat(coin.volume24h || "0") > 0)
-          .sort((a, b) => parseFloat(b.volume24h || "0") - parseFloat(a.volume24h || "0"));
+        return [
+          ...coins.filter(coin => parseFloat(coin.volume24h || "0") > 0),
+          ...contractPosts
+            .filter(post => post.marketCap > BigInt(0))
+            .map(post => ({
+              id: post.id.toString(),
+              name: post.title,
+              symbol: post.symbol,
+              address: post.coinAddress,
+              creatorAddress: post.author,
+              totalSupply: post.totalSupply.toString(),
+              marketCap: post.marketCap.toString(),
+              volume24h: "0",
+              createdAt: new Date(post.createdAt).toISOString(),
+              uniqueHolders: "1",
+              description: post.content,
+              source: 'local' as const,
+              isVerified: true,
+              mediaContent: {
+                previewImage: {
+                  small: post.imageUrl,
+                  medium: post.imageUrl,
+                  large: post.imageUrl,
+                }
+              }
+            })) as CoinNode[]
+        ].sort((a, b) => parseFloat(b.marketCap || "0") - parseFloat(a.marketCap || "0"));
       case 'recent':
-        return [...coins].sort((a, b) => 
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
+        return [
+          ...coins,
+          ...contractPosts.map(post => ({
+            id: post.id.toString(),
+            name: post.title,
+            symbol: post.symbol,
+            address: post.coinAddress,
+            creatorAddress: post.author,
+            totalSupply: post.totalSupply.toString(),
+            marketCap: (post.marketCap || BigInt(0)).toString(),
+            volume24h: "0",
+            createdAt: new Date(post.createdAt).toISOString(),
+            uniqueHolders: "1",
+            description: post.content,
+            source: 'local' as const,
+            isVerified: true,
+            mediaContent: {
+              previewImage: {
+                small: post.imageUrl,
+                medium: post.imageUrl,
+                large: post.imageUrl,
+              }
+            }
+          })) as CoinNode[]
+        ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
       default:
         return coins;
     }
@@ -165,7 +262,7 @@ export default function ExplorePage() {
                 // Add source flag for UI indication
                 allCoins.push({
                   ...coin,
-                  source: 'local',
+                  source: 'local' as const,
                   isVerified: true // These are verified since they're created through our platform
                 });
               }
@@ -186,14 +283,17 @@ export default function ExplorePage() {
         totalSupply: safeFormatEther(node.totalSupply),
         marketCap: safeFormatEther(node.marketCap),
         volume24h: safeFormatEther(node.volume24h),
-        source: 'zora',
+        source: 'zora' as const,
         isVerified: true
       }));
 
       apiCoins.forEach(coin => {
         if (!seenAddresses.has(coin.address)) {
           seenAddresses.add(coin.address);
-          allCoins.push(coin);
+          allCoins.push({
+            ...coin,
+            source: 'local' as const
+          });
         }
       });
     } catch (err) {
@@ -291,10 +391,10 @@ export default function ExplorePage() {
           🌐 All
         </button>
         <button
-          onClick={() => setActiveFilter('postmint')}
-          className={`btn btn-sm ${activeFilter === 'postmint' ? 'btn-primary' : 'btn-outline'} rounded-full px-6`}
+          onClick={() => setActiveFilter('on-chain')}
+          className={`btn btn-sm ${activeFilter === 'on-chain' ? 'btn-primary' : 'btn-outline'} rounded-full px-6`}
         >
-          📝 PostMint
+          ⛓️ On-Chain Posts
         </button>
         <button
           onClick={() => setActiveFilter('trending')}

@@ -1195,6 +1195,1196 @@ const deployedContracts = {
       deploymentScript: "Deploy.s.sol",
     },
   },
+  84532: {
+    PostMintFactory: {
+      address: "0xcc71abcc15da45dde1fdb4dff29785c028de8f0b",
+      abi: [
+        {
+          type: "constructor",
+          inputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "receive",
+          stateMutability: "payable",
+        },
+        {
+          type: "function",
+          name: "creatorInstances",
+          inputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "deactivateInstance",
+          inputs: [
+            {
+              name: "_instanceId",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "deployPostMint",
+          inputs: [
+            {
+              name: "_name",
+              type: "string",
+              internalType: "string",
+            },
+            {
+              name: "_feeRecipient",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "payable",
+        },
+        {
+          type: "function",
+          name: "deploymentFee",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "getInstance",
+          inputs: [
+            {
+              name: "_instanceId",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "tuple",
+              internalType: "struct PostMintFactory.PostMintInstance",
+              components: [
+                {
+                  name: "contractAddress",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "creator",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "name",
+                  type: "string",
+                  internalType: "string",
+                },
+                {
+                  name: "createdAt",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+                {
+                  name: "isActive",
+                  type: "bool",
+                  internalType: "bool",
+                },
+              ],
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "getInstancesByCreator",
+          inputs: [
+            {
+              name: "_creator",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "uint256[]",
+              internalType: "uint256[]",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "getRecentInstances",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "tuple[]",
+              internalType: "struct PostMintFactory.PostMintInstance[]",
+              components: [
+                {
+                  name: "contractAddress",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "creator",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "name",
+                  type: "string",
+                  internalType: "string",
+                },
+                {
+                  name: "createdAt",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+                {
+                  name: "isActive",
+                  type: "bool",
+                  internalType: "bool",
+                },
+              ],
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "instances",
+          inputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [
+            {
+              name: "contractAddress",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "creator",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "name",
+              type: "string",
+              internalType: "string",
+            },
+            {
+              name: "createdAt",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "isActive",
+              type: "bool",
+              internalType: "bool",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "isPostMintContract",
+          inputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "bool",
+              internalType: "bool",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "nextInstanceId",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "owner",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "renounceOwnership",
+          inputs: [],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "totalInstances",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "transferOwnership",
+          inputs: [
+            {
+              name: "newOwner",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "updateDeploymentFee",
+          inputs: [
+            {
+              name: "_newFee",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "withdrawFees",
+          inputs: [],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "event",
+          name: "DeploymentFeeUpdated",
+          inputs: [
+            {
+              name: "newFee",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "OwnershipTransferred",
+          inputs: [
+            {
+              name: "previousOwner",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "newOwner",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "PostMintDeployed",
+          inputs: [
+            {
+              name: "instanceId",
+              type: "uint256",
+              indexed: true,
+              internalType: "uint256",
+            },
+            {
+              name: "contractAddress",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "creator",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "name",
+              type: "string",
+              indexed: false,
+              internalType: "string",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "error",
+          name: "OwnableInvalidOwner",
+          inputs: [
+            {
+              name: "owner",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "OwnableUnauthorizedAccount",
+          inputs: [
+            {
+              name: "account",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+        },
+      ],
+      inheritedFunctions: {},
+      deploymentFile: "run-1757956908581.json",
+      deploymentScript: "Deploy.s.sol",
+    },
+    PostMint: {
+      address: "0xa550d90493dbdcaa9a7ddf52e2bf81719b4f52e9",
+      abi: [
+        {
+          type: "constructor",
+          inputs: [
+            {
+              name: "_feeRecipient",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "receive",
+          stateMutability: "payable",
+        },
+        {
+          type: "function",
+          name: "authorPosts",
+          inputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "authors",
+          inputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [
+            {
+              name: "authorAddress",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "totalPosts",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "totalEarnings",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "totalSupport",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "isVerified",
+              type: "bool",
+              internalType: "bool",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "createPost",
+          inputs: [
+            {
+              name: "_title",
+              type: "string",
+              internalType: "string",
+            },
+            {
+              name: "_content",
+              type: "string",
+              internalType: "string",
+            },
+            {
+              name: "_metadataURI",
+              type: "string",
+              internalType: "string",
+            },
+            {
+              name: "_coinAddress",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "deactivatePost",
+          inputs: [
+            {
+              name: "_postId",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "emergencyWithdraw",
+          inputs: [],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "feeRecipient",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "getAuthor",
+          inputs: [
+            {
+              name: "_author",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "tuple",
+              internalType: "struct PostMint.Author",
+              components: [
+                {
+                  name: "authorAddress",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "totalPosts",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+                {
+                  name: "totalEarnings",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+                {
+                  name: "totalSupport",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+                {
+                  name: "isVerified",
+                  type: "bool",
+                  internalType: "bool",
+                },
+              ],
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "getPost",
+          inputs: [
+            {
+              name: "_postId",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "tuple",
+              internalType: "struct PostMint.BlogPost",
+              components: [
+                {
+                  name: "id",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+                {
+                  name: "title",
+                  type: "string",
+                  internalType: "string",
+                },
+                {
+                  name: "content",
+                  type: "string",
+                  internalType: "string",
+                },
+                {
+                  name: "metadataURI",
+                  type: "string",
+                  internalType: "string",
+                },
+                {
+                  name: "author",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "coinAddress",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "createdAt",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+                {
+                  name: "totalSupport",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+                {
+                  name: "isActive",
+                  type: "bool",
+                  internalType: "bool",
+                },
+              ],
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "getPostSupporters",
+          inputs: [
+            {
+              name: "_postId",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "address[]",
+              internalType: "address[]",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "getPostsByAuthor",
+          inputs: [
+            {
+              name: "_author",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "uint256[]",
+              internalType: "uint256[]",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "getRecentPosts",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "tuple[]",
+              internalType: "struct PostMint.BlogPost[]",
+              components: [
+                {
+                  name: "id",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+                {
+                  name: "title",
+                  type: "string",
+                  internalType: "string",
+                },
+                {
+                  name: "content",
+                  type: "string",
+                  internalType: "string",
+                },
+                {
+                  name: "metadataURI",
+                  type: "string",
+                  internalType: "string",
+                },
+                {
+                  name: "author",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "coinAddress",
+                  type: "address",
+                  internalType: "address",
+                },
+                {
+                  name: "createdAt",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+                {
+                  name: "totalSupport",
+                  type: "uint256",
+                  internalType: "uint256",
+                },
+                {
+                  name: "isActive",
+                  type: "bool",
+                  internalType: "bool",
+                },
+              ],
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "getUserSupport",
+          inputs: [
+            {
+              name: "_user",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "_postId",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "nextPostId",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "owner",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "platformFee",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "postSupporters",
+          inputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "posts",
+          inputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [
+            {
+              name: "id",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "title",
+              type: "string",
+              internalType: "string",
+            },
+            {
+              name: "content",
+              type: "string",
+              internalType: "string",
+            },
+            {
+              name: "metadataURI",
+              type: "string",
+              internalType: "string",
+            },
+            {
+              name: "author",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "coinAddress",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "createdAt",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "totalSupport",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "isActive",
+              type: "bool",
+              internalType: "bool",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "renounceOwnership",
+          inputs: [],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "supportPost",
+          inputs: [
+            {
+              name: "_postId",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "_coinAmount",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [],
+          stateMutability: "payable",
+        },
+        {
+          type: "function",
+          name: "totalPosts",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "transferOwnership",
+          inputs: [
+            {
+              name: "newOwner",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "updateFeeRecipient",
+          inputs: [
+            {
+              name: "_newRecipient",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "updatePlatformFee",
+          inputs: [
+            {
+              name: "_newFee",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "userSupport",
+          inputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "verifyAuthor",
+          inputs: [
+            {
+              name: "_author",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "event",
+          name: "AuthorVerified",
+          inputs: [
+            {
+              name: "author",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "FeeRecipientUpdated",
+          inputs: [
+            {
+              name: "newRecipient",
+              type: "address",
+              indexed: false,
+              internalType: "address",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "OwnershipTransferred",
+          inputs: [
+            {
+              name: "previousOwner",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "newOwner",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "PlatformFeeUpdated",
+          inputs: [
+            {
+              name: "newFee",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "PostCreated",
+          inputs: [
+            {
+              name: "postId",
+              type: "uint256",
+              indexed: true,
+              internalType: "uint256",
+            },
+            {
+              name: "author",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "title",
+              type: "string",
+              indexed: false,
+              internalType: "string",
+            },
+            {
+              name: "coinAddress",
+              type: "address",
+              indexed: false,
+              internalType: "address",
+            },
+            {
+              name: "metadataURI",
+              type: "string",
+              indexed: false,
+              internalType: "string",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "event",
+          name: "PostSupported",
+          inputs: [
+            {
+              name: "postId",
+              type: "uint256",
+              indexed: true,
+              internalType: "uint256",
+            },
+            {
+              name: "supporter",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "amount",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+            {
+              name: "coinAmount",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+          ],
+          anonymous: false,
+        },
+        {
+          type: "error",
+          name: "OwnableInvalidOwner",
+          inputs: [
+            {
+              name: "owner",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "OwnableUnauthorizedAccount",
+          inputs: [
+            {
+              name: "account",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+        },
+        {
+          type: "error",
+          name: "ReentrancyGuardReentrantCall",
+          inputs: [],
+        },
+      ],
+      inheritedFunctions: {},
+      deploymentFile: "run-1757956908581.json",
+      deploymentScript: "Deploy.s.sol",
+    },
+  },
 } as const;
 
 export default deployedContracts satisfies GenericContractsDeclaration;

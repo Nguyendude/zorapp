@@ -14,6 +14,7 @@ import { baseSepolia } from "viem/chains";
 import { useAccount, useWalletClient } from "wagmi";
 import { notification } from "~~/utils/scaffold-eth";
 import { sendNewPostNotification } from "~~/utils/telegram";
+import { usePostStore } from "~~/services/store/postStore";
 
 if (typeof window !== "undefined" && process.env.NEXT_PUBLIC_ZORA_API_KEY) {
   setApiKey(process.env.NEXT_PUBLIC_ZORA_API_KEY);
@@ -101,24 +102,16 @@ export default function CreatePage() {
         .withDescription(blogPost.content.trim() || "NO CONTENT")
         .withImage(imageFile)
         // Add additional metadata for better indexing
-        .withAttributes([
-          { trait_type: "type", value: "blog_post" },
-          { trait_type: "platform", value: "PostMint" },
-          { trait_type: "chain", value: "base-sepolia" },
-          { trait_type: "creator", value: connectedAddress }
-        ]);
+        .withProperties({
+          type: "blog_post",
+          platform: "PostMint",
+          chain: "base-sepolia",
+          creator: connectedAddress
+        });
 
       // Create metadata with proper creator attribution
       const { createMetadataParameters } = await metadataBuilder.upload(
-        createZoraUploaderForCreator(connectedAddress as Address, {
-          // Add indexing hints
-          indexerHints: {
-            includedInExplore: true,
-            priority: "high",
-            mediaType: "image",
-            contentType: "blog_post"
-          }
-        })
+        createZoraUploaderForCreator(connectedAddress as Address)
       );
       notification.info("✅ Metadata uploaded to IPFS!");
       const coinParams = {
@@ -138,8 +131,9 @@ export default function CreatePage() {
         deployment: result.deployment,
       });
 
-      // Notify indexer about new coin creation
+      // Update both Zora indexer and local store
       try {
+        // Notify Zora indexer
         const indexerNotification = await fetch("https://api.zora.co/v1/indexer/notify", {
           method: "POST",
           headers: {
@@ -155,10 +149,26 @@ export default function CreatePage() {
         });
 
         if (!indexerNotification.ok) {
-          console.warn("Indexer notification failed, coin might take longer to appear");
+          console.warn("Zora indexer notification failed, coin might take longer to appear");
         }
+
+        // Add to local store immediately
+        usePostStore.getState().addPost({
+          id: Date.now(), // Temporary ID until we get the event
+          title: blogPost.title,
+          content: blogPost.content,
+          symbol: blogPost.symbol || "POST",
+          coinAddress: coinAddress,
+          author: connectedAddress,
+          createdAt: Date.now(),
+          imageUrl: URL.createObjectURL(imageFile),
+          marketCap: BigInt(0),
+          totalSupply: BigInt("1000000000000000000000000000"),
+          lastPrice: BigInt(0)
+        });
+
       } catch (error) {
-        console.warn("Failed to notify indexer:", error);
+        console.warn("Failed to update indexes:", error);
       }
 
       // Send Telegram notification
