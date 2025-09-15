@@ -1,3 +1,7 @@
+ [profile.base-sepolia]
+ eth_rpc_url = "https://base-sepolia.g.alchemy.com/v2/o3VW3WRXrsXXMRX3l7jZxLUqhWyZzXBy"
+ private_key = "0x17f57e5a5da1c7eb183fd1d8bd08d54d66303c4333ce70e344e95b1363d335ab"
+ chain_id = 84532
 [profile.default]
 src = 'contracts'
 out = 'out'
