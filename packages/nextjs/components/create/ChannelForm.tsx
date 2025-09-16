@@ -25,7 +25,7 @@ export function ChannelForm() {
   });
 
   const { 
-    write: createChannel,
+    writeAsync: createChannelAsync,
     data: txData,
     isLoading: isWritePending,
     isSuccess: isWriteSuccess,
@@ -59,14 +59,15 @@ export function ChannelForm() {
       setIsLoading(true);
       notification.info("Creating channel...");
 
-      createChannel({
+      const tx = await createChannelAsync({
         args: [
           formData.name,
           formData.symbol,
           formData.description,
-          parseEther(formData.initialSupply || "0")
-        ],
+          BigInt(parseEther(formData.initialSupply))
+        ]
       });
+      notification.info("Transaction submitted. Waiting for confirmation...");
 
     } catch (error) {
       console.error(error);

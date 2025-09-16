@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 
 export interface Post {
   id: number;
@@ -24,31 +25,68 @@ interface PostStore {
   fetchPosts: () => Promise<void>;
 }
 
-export const usePostStore = create<PostStore>((set) => ({
-  posts: [],
-  isLoading: false,
-  error: null,
-  addPost: (post) => set((state) => ({ 
-    posts: [...state.posts, post],
-    error: null
-  })),
-  setPosts: (posts) => set({ 
-    posts,
-    error: null
-  }),
-  setLoading: (loading) => set({ isLoading: loading }),
-  setError: (error) => set({ error }),
-  fetchPosts: async () => {
-    set({ isLoading: true, error: null });
-    try {
-      // TODO: Implement actual fetching logic here
-      // This is a placeholder that sets empty posts
-      set({ posts: [], isLoading: false });
-    } catch (error) {
-      set({ 
-        error: error instanceof Error ? error : new Error('Failed to fetch posts'),
-        isLoading: false 
-      });
-    }
+const createStore = () => {
+  if (typeof window === 'undefined') {
+    // Server-side store without persistence
+    return create<PostStore>((set) => ({
+      posts: [],
+      isLoading: false,
+      error: null,
+      addPost: (post) => set((state) => ({ 
+        posts: [...state.posts, post],
+        error: null 
+      })),
+      setPosts: (posts) => set({ posts, error: null }),
+      setLoading: (loading) => set({ isLoading: loading }),
+      setError: (error) => set({ error }),
+      fetchPosts: async () => {
+        set({ isLoading: true, error: null });
+        try {
+          // TODO: Implement actual fetching logic
+          set({ posts: [], isLoading: false });
+        } catch (error) {
+          set({ 
+            error: error instanceof Error ? error : new Error('Failed to fetch posts'),
+            isLoading: false 
+          });
+        }
+      }
+    }));
   }
-}));
+
+  // Client-side store with persistence
+  return create<PostStore>()(
+    persist(
+      (set) => ({
+        posts: [],
+        isLoading: false,
+        error: null,
+        addPost: (post) => set((state) => ({ 
+          posts: [...state.posts, post],
+          error: null 
+        })),
+        setPosts: (posts) => set({ posts, error: null }),
+        setLoading: (loading) => set({ isLoading: loading }),
+        setError: (error) => set({ error }),
+        fetchPosts: async () => {
+          set({ isLoading: true, error: null });
+          try {
+            // TODO: Implement actual fetching logic
+            set({ posts: [], isLoading: false });
+          } catch (error) {
+            set({ 
+              error: error instanceof Error ? error : new Error('Failed to fetch posts'),
+              isLoading: false 
+            });
+          }
+        }
+      }),
+      {
+        name: 'post-storage',
+        storage: createJSONStorage(() => localStorage)
+      }
+    )
+  );
+};
+
+export const usePostStore = createStore();
