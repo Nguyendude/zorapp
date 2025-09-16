@@ -41,6 +41,12 @@ export const Header = () => {
           <li>
             <NavLink href="/dashboard">Dashboard</NavLink>
           </li>
+          <li>
+            <NavLink href="/dashboard">Page Analyzer</NavLink>
+          </li>
+          <li>
+            <NavLink href="/dashboard">Import Content</NavLink>
+          </li>
         </ul>
         {/* Search bar */}
         <form className="ml-4 flex items-center" role="search" onSubmit={e => e.preventDefault()}>

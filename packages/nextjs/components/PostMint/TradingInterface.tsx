@@ -12,6 +12,8 @@ import {
 } from "@zoralabs/coins-sdk";
 import type { TradeParameters } from "@zoralabs/coins-sdk";
 import { notification } from "~~/utils/scaffold-eth";
+import { getClaimableRewards, watchNewRewards } from "~~/utils/rewards";
+import { RewardsAnalytics } from "./RewardsAnalytics";
 
 setApiKey(process.env.NEXT_PUBLIC_ZORA_API_KEY || "");
 
@@ -28,6 +30,33 @@ export const TradingInterface = ({ coinAddress, postTitle, postId }: TradingInte
 	const [isTrading, setIsTrading] = useState(false);
 	const [coinDetails, setCoinDetails] = useState<any>(null);
 	const [tradeType, setTradeType] = useState<"buy" | "sell">("buy");
+	const [rewardsBalance, setRewardsBalance] = useState<string>("0");
+
+			// Monitor rewards
+			useEffect(() => {
+				if (!address) return;
+
+				// Initial fetch of claimable rewards
+				const fetchRewards = async () => {
+					const rewards = await getClaimableRewards(address);
+					setRewardsBalance(formatEther(rewards));
+				};
+				
+				fetchRewards();
+
+				// Watch for new rewards
+				const unwatchRewards = watchNewRewards(address, (event) => {
+					notification.success(
+						`Received developer reward: ${formatEther(event.amount)} ETH`,
+						{ icon: "💰" }
+					);
+					fetchRewards(); // Update rewards balance
+				});
+
+				return () => {
+					unwatchRewards();
+				};
+			}, [address]);
 
 			useEffect(() => {
 				const fetchCoinDetails = async () => {
@@ -181,6 +210,11 @@ export const TradingInterface = ({ coinAddress, postTitle, postId }: TradingInte
 				</div>
 				<div className="mt-4 text-xs text-center text-accent-content opacity-70">
 					Powered by Zora Coins SDK
+				</div>
+
+				{/* Analytics Dashboard */}
+				<div className="mt-8">
+					<RewardsAnalytics />
 				</div>
 			</div>
 		);

@@ -1,36 +1,43 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
-import {
-  DeployCurrency,
-  createCoin,
-  createMetadataBuilder,
-  createZoraUploaderForCreator,
-  setApiKey,
-} from "@zoralabs/coins-sdk";
-import { Address, createPublicClient, http } from "viem";
-import { baseSepolia } from "viem/chains";
-import { useAccount, useWalletClient } from "wagmi";
-import { notification } from "~~/utils/scaffold-eth";
-import { sendNewPostNotification } from "~~/utils/telegram";
-import { usePostStore } from "~~/services/store/postStore";
+import { useState } from "react";
+import { ChannelForm } from "~~/components/create/ChannelForm";
+import { ContentForm } from "~~/components/create/ContentForm";
 
-if (typeof window !== "undefined" && process.env.NEXT_PUBLIC_ZORA_API_KEY) {
-  setApiKey(process.env.NEXT_PUBLIC_ZORA_API_KEY);
-}
+export default function Page() {
+  const [activeTab, setActiveTab] = useState<"channel" | "content">("channel");
 
-interface BlogPost {
-  title: string;
-  content: string;
-  symbol: string;
-}
+  const handleTabChange = (tab: "channel" | "content") => {
+    setActiveTab(tab);
+  };
 
-interface CoinCreationResult {
-  hash: string;
-  address: string;
-  deployment: any;
-}
+  return (
+    <div className="flex flex-col py-8 px-4 lg:px-8 min-h-full">
+      <div className="max-w-2xl mx-auto w-full">
+        <h1 className="text-4xl font-bold mb-8">Create New</h1>
+        
+        {/* Tabs */}
+        <div className="tabs tabs-boxed mb-6">
+          <button
+            className={`tab ${activeTab === "channel" ? "tab-active" : ""}`}
+            onClick={() => handleTabChange("channel")}
+          >
+            Channel
+          </button>
+          <button
+            className={`tab ${activeTab === "content" ? "tab-active" : ""}`}
+            onClick={() => handleTabChange("content")}
+          >
+            Content
+          </button>
+        </div>
+
+        {/* Form */}
+        {activeTab === "channel" ? <ChannelForm /> : <ContentForm />}
+      </div>
+    </div>
+  );
+  }
 
 export default function CreatePage() {
   const { address: connectedAddress } = useAccount();

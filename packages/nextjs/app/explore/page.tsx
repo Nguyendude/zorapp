@@ -1,41 +1,43 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import Image from "next/image";
-import Link from "next/link";
-import { getCoin, getCoinsLastTraded, getCoinsMostValuable, getCoinsNew, setApiKey } from "@zoralabs/coins-sdk";
-import { formatEther } from "viem";
-import { baseSepolia } from "viem/chains";
-import { useAccount } from "wagmi";
-import { usePostStore } from "~~/services/store/postStore";
+import { useState } from "react";
+import { ChannelListing } from "~~/components/explore/ChannelListing";
+import { ContentListing } from "~~/components/explore/ContentListing";
 
-if (typeof window !== "undefined" && process.env.NEXT_PUBLIC_ZORA_API_KEY) {
-  setApiKey(process.env.NEXT_PUBLIC_ZORA_API_KEY);
-}
+export default function Page() {
+  const [activeTab, setActiveTab] = useState<"channel" | "content">("channel");
 
-interface CoinNode {
-  id: string;
-  name: string;
-  symbol: string;
-  address: string;
-  creatorAddress: string;
-  totalSupply: string;
-  marketCap: string;
-  volume24h: string;
-  createdAt: string;
-  uniqueHolders: string;
-  description?: string;
-  totalVolume?: string;
-  uniswapV3PoolAddress?: string;
-  source?: 'local' | 'zora';
-  isVerified?: boolean;
-  mediaContent?: {
-    previewImage?: {
-      small?: string;
-      medium?: string;
-      large?: string;
-    };
+  const handleTabChange = (tab: "channel" | "content") => {
+    setActiveTab(tab);
   };
+
+  return (
+    <div className="flex flex-col py-8 px-4 lg:px-8 min-h-full">
+      <div className="w-full">
+        <h1 className="text-4xl font-bold mb-8">Explore</h1>
+        
+        {/* Tabs */}
+        <div className="tabs tabs-boxed mb-6">
+          <button
+            className={`tab ${activeTab === "channel" ? "tab-active" : ""}`}
+            onClick={() => handleTabChange("channel")}
+          >
+            Channels
+          </button>
+          <button
+            className={`tab ${activeTab === "content" ? "tab-active" : ""}`}
+            onClick={() => handleTabChange("content")}
+          >
+            Content
+          </button>
+        </div>
+
+        {/* Listing */}
+        {activeTab === "channel" ? <ChannelListing /> : <ContentListing />}
+      </div>
+    </div>
+  );
+  
 }
 
 interface ExploreListResponse {
@@ -123,7 +125,8 @@ export default function ExplorePage() {
   const [retryCount, setRetryCount] = useState(0);
   
   // Get posts from our local contract store
-  const contractPosts = usePostStore(state => state.posts);
+  const { posts: contractPosts, isLoading, error: postStoreError } = usePostStore();
+  console.log('Contract posts:', { contractPosts, isLoading, error: postStoreError });
 
   // Filter coins based on current filter
   const filteredCoins = useMemo(() => {
@@ -158,28 +161,44 @@ export default function ExplorePage() {
         ] : [];
       case 'on-chain':
         // Show posts from our contract events
-        return contractPosts.map(post => ({
-          id: post.id.toString(),
-          name: post.title,
-          symbol: post.symbol,
-          address: post.coinAddress,
-          creatorAddress: post.author,
-          totalSupply: post.totalSupply.toString(),
-          marketCap: (post.marketCap || BigInt(0)).toString(),
-          volume24h: "0",
-          createdAt: new Date(post.createdAt).toISOString(),
-          uniqueHolders: "1",
-          description: post.content,
-          source: 'local' as const,
-          isVerified: true,
-          mediaContent: {
-            previewImage: {
-              small: post.imageUrl,
-              medium: post.imageUrl,
-              large: post.imageUrl,
+        console.log('Processing on-chain posts:', { contractPosts, isLoading });
+        if (isLoading) {
+          console.log('Posts are still loading...');
+          return [];
+        }
+        if (postStoreError) {
+          console.error('Error loading posts:', postStoreError);
+          return [];
+        }
+        if (!contractPosts.length) {
+          console.log('No contract posts found');
+          return [];
+        }
+        return contractPosts.map(post => {
+          console.log('Processing post:', post);
+          return {
+            id: post.id.toString(),
+            name: post.title,
+            symbol: post.symbol,
+            address: post.coinAddress,
+            creatorAddress: post.author,
+            totalSupply: post.totalSupply.toString(),
+            marketCap: (post.marketCap || BigInt(0)).toString(),
+            volume24h: "0",
+            createdAt: new Date(post.createdAt).toISOString(),
+            uniqueHolders: "1",
+            description: post.content,
+            source: 'local' as const,
+            isVerified: true,
+            mediaContent: {
+              previewImage: {
+                small: post.imageUrl,
+                medium: post.imageUrl,
+                large: post.imageUrl,
+              }
             }
-          }
-        })) as CoinNode[];
+          };
+        }) as CoinNode[];
       case 'trending':
         return [
           ...coins.filter(coin => parseFloat(coin.volume24h || "0") > 0),
@@ -239,85 +258,74 @@ export default function ExplorePage() {
     }
   }, [coins, activeFilter, address]);
 
-  // Enhanced coin fetching from multiple sources
+  // Enhanced coin fetching with separate Zora and platform coins
   const fetchCoins = async (retry = 0) => {
     setLoading(true);
-    const allCoins: CoinNode[] = [];
+    const zoraCoins: CoinNode[] = [];
+    const platformCoins: CoinNode[] = [];
     const seenAddresses = new Set<string>();
 
-    // 1. First priority: Get locally created/cached coins
+    // 1. Fetch coins from our platform's posts
     try {
-      if (typeof window !== "undefined") {
-        // Get all users' coins from localStorage
-        const allKeys = Object.keys(localStorage);
-        const coinKeys = allKeys.filter(key => key.startsWith('user_coins_'));
-        
-        for (const key of coinKeys) {
-          const cachedCoins = localStorage.getItem(key);
-          if (cachedCoins) {
-            const parsed = JSON.parse(cachedCoins);
-            parsed.forEach((coin: CoinNode) => {
-              if (!seenAddresses.has(coin.address)) {
-                seenAddresses.add(coin.address);
-                // Add source flag for UI indication
-                allCoins.push({
-                  ...coin,
-                  source: 'local' as const,
-                  isVerified: true // These are verified since they're created through our platform
-                });
+      // Map contract posts to CoinNode format
+      contractPosts.forEach(post => {
+        if (!seenAddresses.has(post.coinAddress)) {
+          seenAddresses.add(post.coinAddress);
+          platformCoins.push({
+            id: post.id.toString(),
+            name: post.title,
+            symbol: post.symbol,
+            address: post.coinAddress,
+            creatorAddress: post.author,
+            totalSupply: post.totalSupply.toString(),
+            marketCap: (post.marketCap || BigInt(0)).toString(),
+            volume24h: "0",
+            createdAt: new Date(post.createdAt).toISOString(),
+            uniqueHolders: "1",
+            description: post.content,
+            source: 'local' as const,
+            isVerified: true,
+            mediaContent: {
+              previewImage: {
+                small: post.imageUrl,
+                medium: post.imageUrl,
+                large: post.imageUrl,
               }
-            });
-          }
-        }
-      }
-    } catch (error) {
-      console.warn("Error loading cached coins:", error);
-    }
-
-    // 2. Second priority: Try Zora API for additional coins
-    try {
-      const res = (await getCoinsNew({ count: 20 })) as ExploreListResponse;
-      const edges = res.data?.exploreList?.edges || [];
-      const apiCoins = edges.map(({ node }) => ({
-        ...node,
-        totalSupply: safeFormatEther(node.totalSupply),
-        marketCap: safeFormatEther(node.marketCap),
-        volume24h: safeFormatEther(node.volume24h),
-        source: 'zora' as const,
-        isVerified: true
-      }));
-
-      apiCoins.forEach(coin => {
-        if (!seenAddresses.has(coin.address)) {
-          seenAddresses.add(coin.address);
-          allCoins.push({
-            ...coin,
-            source: 'local' as const
-          });
-        }
-      });
-    } catch (err) {
-      console.warn("Error fetching from Zora API:", err);
-      // Don't set error - we still have local coins to show
-    }
-
-    // 2. Add manually added coins from localStorage
-    try {
-      if (typeof window !== "undefined") {
-        const cachedCoins = localStorage.getItem(`user_coins_${address}`);
-        if (cachedCoins) {
-          const parsed = JSON.parse(cachedCoins);
-          parsed.forEach((coin: CoinNode) => {
-            if (!seenAddresses.has(coin.address)) {
-              seenAddresses.add(coin.address);
-              allCoins.push(coin);
             }
           });
         }
-      }
+      });
     } catch (error) {
-      console.error("Error loading cached coins:", error);
+      console.warn("Error processing platform coins:", error);
     }
+
+    // 2. Fetch coins from Zora API
+    if (activeFilter !== 'on-chain') { // Only fetch Zora coins if not in 'on-chain' filter
+      try {
+        const res = (await getCoinsNew({ count: 20 })) as ExploreListResponse;
+        const edges = res.data?.exploreList?.edges || [];
+        edges.forEach(({ node }) => {
+          if (!seenAddresses.has(node.address)) {
+            seenAddresses.add(node.address);
+            zoraCoins.push({
+              ...node,
+              totalSupply: safeFormatEther(node.totalSupply),
+              marketCap: safeFormatEther(node.marketCap),
+              volume24h: safeFormatEther(node.volume24h),
+              source: 'zora' as const,
+              isVerified: true
+            });
+          }
+        });
+      } catch (err) {
+        console.warn("Error fetching from Zora API:", err);
+      }
+    }
+
+    // Combine coins based on filter
+    const allCoins = activeFilter === 'on-chain' 
+      ? platformCoins 
+      : [...platformCoins, ...zoraCoins];
 
     setCoins(allCoins);
     setLoading(false);
@@ -484,8 +492,15 @@ export default function ExplorePage() {
                     style={{ width: 240, height: 400 }}
                   >
                     {mediaUrl ? (
-                      <div className="flex items-center justify-center w-full h-full bg-base-200">
-                        <Image src={mediaUrl} alt={c.name} fill className="object-contain" loading="lazy" />
+                      <div className="relative flex items-center justify-center w-full h-full bg-base-200">
+                        <Image
+                          src={mediaUrl}
+                          alt={c.name}
+                          fill
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                          className="object-contain"
+                          loading="lazy"
+                        />
                       </div>
                     ) : (
                       <div
